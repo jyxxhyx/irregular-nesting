@@ -203,8 +203,10 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polyg
     fig.tight_layout()
 
     plt.show()
-    fig.savefig(os.path.join('iter', 'construction_{}_{}_{}.pdf'.format(out_iter, inner_iter, add_str)))
-    # fig.savefig(os.path.join('iter', 'construction_{}_{}_{}.png'.format(out_iter, inner_iter, add_str)))
+    fig.savefig(os.path.join(os.pardir, 'figure', 'iter', 'construction_{}_{}_{}.pdf'.format(out_iter, inner_iter,
+                                                                                             add_str)))
+    fig.savefig(os.path.join(os.pardir, 'figure', 'iter', 'construction_{}_{}_{}.png'.format(out_iter, inner_iter,
+                                                                                             add_str)))
     return
 
 
