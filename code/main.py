@@ -63,6 +63,26 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     return
 
 
+def _check_create_result_directory(input_dir):
+    """
+    检查输出、图片路径是否存在。
+    Parameters
+    ----------
+    input_dir
+
+    Returns
+    -------
+
+    """
+    output_dir = input_dir.replace('data', 'submit')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    output_dir = input_dir.replace('data', 'figure')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    return
+
+
 def main():
     material_str = 'mianliao'
     shape_str = 'lingjian'
@@ -74,6 +94,7 @@ def main():
         for input_dir in dirs:
             instance_dir = os.path.join(root, input_dir)
             # 遍历各dataset下面不同算例文件
+            _check_create_result_directory(instance_dir)
             for file in os.listdir(instance_dir):
                 # 根据面料输入来确定算例
                 if shape_str in file:
