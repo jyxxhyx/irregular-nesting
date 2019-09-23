@@ -51,7 +51,7 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     print('Material length:\t{:.3f}m'.format(objective / 1000))
     print('Material area:\t{:.3f}m2'.format(objective * material.height / 1000000))
     utilization = total_area / (objective * material.height)
-    print('Material utilization:\t{:.3f}%'.format(utilization))
+    print('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
     file_name = os.path.join(os.pardir, 'submit', 'DatasetA', file_name)
     writer.write_to_csv(file_name, instance, solution)
