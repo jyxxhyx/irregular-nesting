@@ -90,6 +90,41 @@ def diff_ifp_nfps(ifp, nfp):
     return result
 
 
+def _is_ifp_nfp_rectangle_distant(ifp, nfp) -> bool:
+    """
+    判断ifp和nfp的外围矩形是否不相交。
+    Parameters
+    ----------
+    ifp
+    nfp
+
+    Returns
+    -------
+
+    """
+    if isinstance(ifp[0][0], numbers.Number):
+        ifp_min_x = min(node[0] for node in ifp)
+        ifp_min_y = min(node[1] for node in ifp)
+        ifp_max_x = max(node[0] for node in ifp)
+        ifp_max_y = max(node[1] for node in ifp)
+    else:
+        ifp_min_x = min(node[0] for each_ifp in ifp for node in each_ifp)
+        ifp_min_y = min(node[1] for each_ifp in ifp for node in each_ifp)
+        ifp_max_x = max(node[0] for each_ifp in ifp for node in each_ifp)
+        ifp_max_y = max(node[1] for each_ifp in ifp for node in each_ifp)
+    if isinstance(nfp[0][0], numbers.Number):
+        nfp_min_x = min(node[0] for node in nfp)
+        nfp_min_y = min(node[1] for node in nfp)
+        nfp_max_x = max(node[0] for node in nfp)
+        nfp_max_y = max(node[1] for node in nfp)
+    else:
+        nfp_min_x = min(node[0] for each_nfp in nfp for node in each_nfp)
+        nfp_min_y = min(node[1] for each_nfp in nfp for node in each_nfp)
+        nfp_max_x = max(node[0] for each_nfp in nfp for node in each_nfp)
+        nfp_max_y = max(node[1] for each_nfp in nfp for node in each_nfp)
+    return (nfp_max_x < ifp_min_x and nfp_max_y < ifp_min_y) or (nfp_min_x > ifp_max_x and nfp_min_y > ifp_max_y)
+
+
 def intersection():
     ifp = [[0, 0], [20, 0], [20, 20], [0, 20]]
     nfp = [[10, 10], [30, 10], [30, 30], [10, 30]]
