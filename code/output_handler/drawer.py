@@ -242,7 +242,7 @@ def draw_result(problem: Problem, objective, positions, file_name):
     # 画形状
     for i, shape in enumerate(problem.shapes):
         position = positions[i]
-        outline = shape.generate_positioned_polygon(position)
+        outline = shape.generate_positioned_polygon_output(position)
         polygon = Polygon(outline)
         face_colors.append('aqua')
         edge_colors.append('skyblue')

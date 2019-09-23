@@ -91,8 +91,19 @@ class Shape:
     def calculate_diagonal_len(self):
         return math.sqrt((self.max_x - self.min_x) ** 2 + (self.max_y - self.min_y) ** 2)
 
-    def generate_positioned_polygon(self, position: Position):
-        return [[x + position.x, y + position.y] for x, y in self.polygon]
+    def generate_positioned_polygon_output(self, position: Position, scale=1):
+        """
+        输出结果是要用到，需要根据scale还原。
+        Parameters
+        ----------
+        position
+        scale
+
+        Returns
+        -------
+
+        """
+        return [[(x + position.x) / scale, (y + position.y) / scale] for x, y in self.polygon]
 
     def generate_positioned_offset_polygon(self, position: Position):
         return [[x + position.x, y + position.y] for x, y in self.offset_polygon]
