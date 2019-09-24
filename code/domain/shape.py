@@ -62,7 +62,7 @@ class Shape:
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
         # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.25)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.10)
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
@@ -74,7 +74,7 @@ class Shape:
         # pco.AddPath(pyclipper.scale_to_clipper(convex_polygon, scale), pyclipper.JT_ROUND,
         #             pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(convex_polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.25)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.10)
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 

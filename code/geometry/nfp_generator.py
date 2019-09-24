@@ -14,7 +14,7 @@ def generate_nfp(polygon1, polygon2):
     # print('simplify nfp len: {}'.format(len(result)))
     # result = pyclipper.CleanPolygon(result, 1.01)
     # print('clean nfp len: {}'.format(len(result)))
-    return pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 0.01)
+    return pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.10)
 
 
 def generate_ifp(material: Material, shape: Shape, spacing):
@@ -74,18 +74,18 @@ def diff_ifp_nfps(ifp, nfp):
 
         union_nfp = pc_temp.Execute(pyclipper.CT_UNION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
         # 此处保守起见，取了NFP并集的凸包
-        temp_union_nfp = union_nfp[0]
-        for i in range(1, len(union_nfp)):
-            temp_union_nfp += union_nfp[i]
-        convex_polygon = MultiPoint(temp_union_nfp).convex_hull
-        convex_polygon = [[int(node[0]), int(node[1])] for node in list(convex_polygon.exterior.coords)]
-
-        pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
+        # temp_union_nfp = union_nfp[0]
+        # for i in range(1, len(union_nfp)):
+        #     temp_union_nfp += union_nfp[i]
+        # convex_polygon = MultiPoint(temp_union_nfp).convex_hull
+        # convex_polygon = [[int(node[0]), int(node[1])] for node in list(convex_polygon.exterior.coords)]
+        #
+        # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
         # TODO 只去除NFP并集中的孔洞，允许形状为非凸（计算结果会有问题）
-        # union_polygon_without_holes = [each_union_nfp for each_union_nfp in union_nfp
-        #                                if pyclipper.Orientation(each_union_nfp)]
-        # pc.AddPaths(union_polygon_without_holes, pyclipper.PT_CLIP, True)
+        union_polygon_without_holes = [each_union_nfp for each_union_nfp in union_nfp
+                                       if pyclipper.Orientation(each_union_nfp)]
+        pc.AddPaths(union_polygon_without_holes, pyclipper.PT_CLIP, True)
     result = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
     return result
 
