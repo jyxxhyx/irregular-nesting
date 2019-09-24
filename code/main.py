@@ -11,7 +11,7 @@ from pprint import pprint
 from timeit import default_timer as timer
 
 
-def _solve_one_instance(material_file, shape_file, nick_name):
+def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     """
     求解一个算例。
     Parameters
@@ -19,6 +19,7 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     material_file: 面料输入路径
     shape_file: 零件输入路径
     nick_name: 用户昵称（输出文件要用）
+    scale: 图形缩放比例
 
     Returns
     -------
@@ -26,19 +27,19 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     """
     start = timer()
 
-    material = data_reader.read_material_from_csv(material_file)
+    material = data_reader.read_material_from_csv(material_file, scale)
 
     # TODO 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + 1
 
-    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing)
+    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing, scale)
     batch = shape_list[0].batch_id
     print('Start to solve batch {}!'.format(batch))
 
-    instance = problem.Problem(shape_list, material, offset_spacing)
+    instance = problem.Problem(shape_list, material, offset_spacing * scale)
 
     total_area = sum(shape.area for shape in shape_list)
-    print('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000000))
+    print('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 / scale**2))
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance)
@@ -48,8 +49,8 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
-    print('Material length:\t{:.3f}m'.format(objective / 1000))
-    print('Material area:\t{:.3f}m2'.format(objective * material.height / 1000000))
+    print('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
+    print('Material area:\t{:.3f}m2'.format(objective * material.height / 1000**2 / scale**2))
     utilization = total_area / (objective * material.height)
     print('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
@@ -63,10 +64,31 @@ def _solve_one_instance(material_file, shape_file, nick_name):
     return
 
 
+def _check_create_result_directory(input_dir):
+    """
+    检查输出、图片路径是否存在。
+    Parameters
+    ----------
+    input_dir
+
+    Returns
+    -------
+
+    """
+    output_dir = input_dir.replace('data', 'submit')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    output_dir = input_dir.replace('data', 'figure')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    return
+
+
 def main():
     material_str = 'mianliao'
     shape_str = 'lingjian'
     nick_name = 'jiangyincaijiao1'
+    scale = 10
 
     data_dir = os.path.join(os.pardir, 'data')
     for root, dirs, files in os.walk(data_dir):
@@ -74,6 +96,7 @@ def main():
         for input_dir in dirs:
             instance_dir = os.path.join(root, input_dir)
             # 遍历各dataset下面不同算例文件
+            _check_create_result_directory(instance_dir)
             for file in os.listdir(instance_dir):
                 # 根据面料输入来确定算例
                 if shape_str in file:
@@ -81,7 +104,7 @@ def main():
                 elif material_str in file:
                     material_file = os.path.join(instance_dir, file)
                     shape_file = material_file.replace(material_str, shape_str)
-                    _solve_one_instance(material_file, shape_file, nick_name)
+                    _solve_one_instance(material_file, shape_file, nick_name, scale)
 
 
 if __name__ == '__main__':
