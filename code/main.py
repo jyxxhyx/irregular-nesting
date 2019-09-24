@@ -32,7 +32,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     # TODO 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + 1
 
-    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing * scale, scale)
+    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing, scale)
     batch = shape_list[0].batch_id
     print('Start to solve batch {}!'.format(batch))
 
@@ -88,7 +88,7 @@ def main():
     material_str = 'mianliao'
     shape_str = 'lingjian'
     nick_name = 'jiangyincaijiao1'
-    scale = 1
+    scale = 10
 
     data_dir = os.path.join(os.pardir, 'data')
     for root, dirs, files in os.walk(data_dir):
