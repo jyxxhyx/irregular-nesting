@@ -2,6 +2,7 @@ from domain.problem import Material, Shape
 
 import numbers
 from pprint import pprint
+from typing import List
 
 import pyclipper
 from shapely.geometry import MultiPoint
@@ -60,6 +61,8 @@ def diff_ifp_nfps(ifp, nfp):
     -------
 
     """
+    ifp = _clear_2d_list(ifp)
+    nfp = _clear_2d_list(nfp)
     pc = pyclipper.Pyclipper()
     if isinstance(ifp[0][0], numbers.Number):
         pc.AddPath(ifp, pyclipper.PT_SUBJECT, True)
@@ -88,6 +91,21 @@ def diff_ifp_nfps(ifp, nfp):
         pc.AddPaths(union_polygon_without_holes, pyclipper.PT_CLIP, True)
     result = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
     return result
+
+
+def _clear_2d_list(_2d_list: List[List[float]]):
+    """
+    去掉CleanPolygons后出现的一些空list
+    Parameters
+    ----------
+    _2d_list
+
+    Returns
+    -------
+
+    """
+    _2d_list = [_1d_list for _1d_list in _2d_list if len(_1d_list) > 0]
+    return _2d_list
 
 
 def _is_ifp_nfp_rectangle_distant(ifp, nfp) -> bool:
