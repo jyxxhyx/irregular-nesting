@@ -2,6 +2,7 @@ from domain.problem import Problem, Position
 from geometry.nfp_generator import generate_nfp, generate_ifp, diff_ifp_nfps, intersect_polygons
 from output_handler import drawer
 
+import datetime
 from typing import List, Dict
 
 
@@ -32,11 +33,11 @@ def bottom_left_heuristic(problem: Problem, sequence) -> Dict[int, Position]:
             nfp_polygon = generate_nfp(shape.offset_polygon, polygon)
             # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, current_polygons,
             #                       shape.offset_polygon, outer_iter,
-            #                       inner_iter, 'a')
+            #                       inner_iter, 'a', problem.shapes[0].batch_id)
             ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_polygon)
             # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, current_polygons,
             #                       shape.offset_polygon, outer_iter,
-            #                       inner_iter, 'b')
+            #                       inner_iter, 'b', problem.shapes[0].batch_id)
 
         # x轴方向权重会不断增加
         weight += 1 / 10

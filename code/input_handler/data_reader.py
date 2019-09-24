@@ -23,14 +23,15 @@ def read_shapes_from_csv(file_name, spacing, scale=1.0, max_shape_len: int = sys
             material_id: str = row[5]
             # 保证所有多边形的坐标都是逆时针方向的
             if not pyclipper.Orientation(shape_polygon):
-                shape = Shape(shape_id, shape_num, list(reversed(shape_polygon)), shape_rotations, batch_id, material_id)
+                shape = Shape(shape_id, shape_num, list(reversed(shape_polygon)), shape_rotations, batch_id,
+                              material_id)
             else:
                 shape = Shape(shape_id, shape_num, shape_polygon, shape_rotations, batch_id, material_id)
 
             # TODO 生成外延多边形的options：矩形，凸包，和实际的offset_polygon。矩形的浪费太多，结果不可行，
             #  实际offset_polygon算出来的结果局部还有问题，目前用凸包的方案
-            # shape.generate_offset_polygon(spacing)
-            shape.generate_convex_offset_polygon(spacing)
+            shape.generate_offset_polygon(spacing)
+            # shape.generate_convex_offset_polygon(spacing)
             # shape.generate_offset_rectangular(spacing)
 
             shape_list.append(shape)

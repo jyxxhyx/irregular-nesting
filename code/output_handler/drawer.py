@@ -115,7 +115,7 @@ def draw_two_shapes_nfp(shape1: Shape, shape2: Shape, nfp: List[Tuple[float, flo
 
 
 def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polygon, out_iter,
-                   inner_iter, add_str):
+                   inner_iter, add_str, batch_id):
     """
     画一次算法迭代中的状态，用于debug
     pyclipper很多操作返回的是三维数据，需要加判断。
@@ -130,6 +130,7 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polyg
     out_iter
     inner_iter
     add_str
+    batch_id
 
     Returns
     -------
@@ -203,10 +204,10 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polyg
     fig.tight_layout()
 
     plt.show()
-    fig.savefig(os.path.join(os.pardir, 'figure', 'iter', 'construction_{}_{}_{}.pdf'.format(out_iter, inner_iter,
-                                                                                             add_str)))
-    fig.savefig(os.path.join(os.pardir, 'figure', 'iter', 'construction_{}_{}_{}.png'.format(out_iter, inner_iter,
-                                                                                             add_str)))
+    fig.savefig(os.path.join(os.pardir, 'figure', 'iter',
+                             '{}_construct_{}_{}_{}.pdf'.format(batch_id, out_iter, inner_iter, add_str)))
+    fig.savefig(os.path.join(os.pardir, 'figure', 'iter',
+                             '{}_construct_{}_{}_{}.png'.format(batch_id, out_iter, inner_iter, add_str)))
     return
 
 

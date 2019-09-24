@@ -41,7 +41,7 @@ class Shape:
         max_y = self.max_y + offset
         self.offset_polygon = [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
 
-    def generate_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, scale=10):
+    def generate_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, scale=1):
         """
         生成多边形的外延多边形（保证多边形之间的间距）。
         PyclipperOffset具体参数见如下链接：
@@ -62,7 +62,7 @@ class Shape:
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
         # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.10)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], 1.10)
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
@@ -74,7 +74,7 @@ class Shape:
         # pco.AddPath(pyclipper.scale_to_clipper(convex_polygon, scale), pyclipper.JT_ROUND,
         #             pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(convex_polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.10)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], 1.10)
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
