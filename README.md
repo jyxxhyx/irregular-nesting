@@ -28,7 +28,7 @@
 
 ## TODO
 
-- [ ] 用numpy存储坐标点，提升计算效率
+- [x] ~~用numpy存储坐标点，提升计算效率~~（暂时没啥改善）
 - [ ] NFP计算结果存储，方便以后local search时候调用
 - [ ] local search部分tabu search方法实现
 - [ ] 零件旋转相关的处理（坐标变化，NFP计算）
