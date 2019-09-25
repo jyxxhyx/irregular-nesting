@@ -25,8 +25,12 @@ def bottom_left_heuristic(problem: Problem, sequence) -> Dict[int, Position]:
     weight = 1
 
     for outer_iter, idx in enumerate(sequence[1:]):
+        if outer_iter % 10 == 9:
+            print('{} shapes positioned. {}'.format(outer_iter + 1, datetime.datetime.now()))
+
         shape = problem.shapes[idx]
-        ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
+        # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
+        ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
 
         for inner_iter, polygon in enumerate(current_polygons):
             # TODO 此处有效率上的优化空间，如果之前放的polygon离现在的ifp_polygon很远（用包络矩形检查一下），可以不算nfp。
