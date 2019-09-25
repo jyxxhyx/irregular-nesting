@@ -36,7 +36,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     batch = shape_list[0].batch_id
     print('Start to solve batch {}!'.format(batch))
 
-    instance = problem.Problem(shape_list, material, offset_spacing * scale)
+    instance = problem.Problem(shape_list, material, offset_spacing)
 
     total_area = sum(shape.area for shape in shape_list)
     print('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 / scale**2))
