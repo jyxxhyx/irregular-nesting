@@ -4,9 +4,11 @@ from output_handler import drawer
 
 import datetime
 from typing import List, Dict
+import logging
 
 
 def bottom_left_heuristic(problem: Problem, sequence) -> Dict[int, Position]:
+    logger = logging.getLogger(__name__)
     material = problem.material
     positions = dict()
 
@@ -26,7 +28,7 @@ def bottom_left_heuristic(problem: Problem, sequence) -> Dict[int, Position]:
 
     for outer_iter, idx in enumerate(sequence[1:]):
         if outer_iter % 10 == 9:
-            print('{} shapes positioned. {}'.format(outer_iter + 1, datetime.datetime.now()))
+            logger.info('{} shapes positioned.'.format(outer_iter + 1))
 
         shape = problem.shapes[idx]
         # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)

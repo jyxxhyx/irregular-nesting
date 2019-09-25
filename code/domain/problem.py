@@ -3,6 +3,7 @@ from domain.material import Material
 
 from pprint import pprint
 from typing import List
+import logging
 
 import pyclipper
 
@@ -15,6 +16,6 @@ class Problem:
         return
 
     def check_orientation(self):
-        print(all(pyclipper.Orientation(shape.polygon) for shape in self.shapes))
+        logging.info(all(pyclipper.Orientation(shape.polygon) for shape in self.shapes))
         return
 

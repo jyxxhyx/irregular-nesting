@@ -1,5 +1,6 @@
 from domain.problem import Material, Shape
 
+import logging
 import numbers
 from pprint import pprint
 from typing import List
@@ -9,14 +10,15 @@ from shapely.geometry import MultiPoint
 
 
 def generate_nfp(polygon1, polygon2):
-    # result = pyclipper.MinkowskiDiff(polygon1, polygon2)[0]
-    # print('origin nfp len: {}'.format(len(result)))
-    # result = pyclipper.SimplifyPolygon(result)[0]
-    # print('simplify nfp len: {}'.format(len(result)))
-    # result = pyclipper.CleanPolygon(result, 1.01)
-    # print('clean nfp len: {}'.format(len(result)))
-    nfp = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
-    return _clear_2d_list(nfp)
+    logger = logging.getLogger(__name__)
+    result = pyclipper.MinkowskiDiff(polygon1, polygon2)
+    logger.debug('Origin nfp size: {}'.format(sum(len(element) for element in result)))
+    result = pyclipper.SimplifyPolygons(result)
+    logger.debug('Simplify nfp size: {}'.format(sum(len(element) for element in result)))
+    result = pyclipper.CleanPolygons(result, 1.20)
+    logger.debug('Clean nfp size: {}'.format(sum(len(element) for element in result)))
+    # nfp = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
+    return _clear_2d_list(result)
 
 
 def generate_ifp(material: Material, shape: Shape, spacing):
