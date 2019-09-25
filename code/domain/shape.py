@@ -2,6 +2,7 @@ from collections import namedtuple
 import math
 from pprint import pprint
 
+import numpy
 import pyclipper
 from shapely.geometry import MultiPoint
 
@@ -41,7 +42,7 @@ class Shape:
         max_y = self.max_y + offset
         self.offset_polygon = [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
 
-    def generate_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, scale=10):
+    def generate_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, precision=1.20):
         """
         生成多边形的外延多边形（保证多边形之间的间距）。
         PyclipperOffset具体参数见如下链接：
@@ -53,6 +54,7 @@ class Shape:
         meter_limit
         arc_tolerance:
         scale
+        precision
 
         Returns
         -------
@@ -60,20 +62,23 @@ class Shape:
         """
         # TODO pyclipper存在取整的精度损失问题，应该读入数据时就把所有坐标值扩大100倍后计算，输出结果时才还原
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
-        pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.25)
-        self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
+        # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], precision)
+        # self.offset_polygon = numpy.array(pyclipper.CleanPolygon(pco.Execute(offset)[0], precision))
+        # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
-    def generate_convex_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, scale=10):
+    def generate_convex_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, precision=1.20):
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
         convex_polygon = MultiPoint(self.polygon).convex_hull
         convex_polygon = [[node[0], node[1]] for node in list(convex_polygon.exterior.coords)]
         # draw_simple_polygon(convex_polygon)
-        pco.AddPath(pyclipper.scale_to_clipper(convex_polygon, scale), pyclipper.JT_ROUND,
-                    pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset * scale)[0], 1.25)
-        self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
+        # pco.AddPath(pyclipper.scale_to_clipper(convex_polygon, scale), pyclipper.JT_ROUND,
+        #             pyclipper.ET_CLOSEDPOLYGON)
+        pco.AddPath(convex_polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], precision)
+        # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
     def approximate_offset_polygon(self, tolerance):
@@ -91,8 +96,19 @@ class Shape:
     def calculate_diagonal_len(self):
         return math.sqrt((self.max_x - self.min_x) ** 2 + (self.max_y - self.min_y) ** 2)
 
-    def generate_positioned_polygon(self, position: Position):
-        return [[x + position.x, y + position.y] for x, y in self.polygon]
+    def generate_positioned_polygon_output(self, position: Position, scale=1):
+        """
+        输出结果是要用到，需要根据scale还原。
+        Parameters
+        ----------
+        position
+        scale
+
+        Returns
+        -------
+
+        """
+        return [[(x + position.x) / scale, (y + position.y) / scale] for x, y in self.polygon]
 
     def generate_positioned_offset_polygon(self, position: Position):
         return [[x + position.x, y + position.y] for x, y in self.offset_polygon]
