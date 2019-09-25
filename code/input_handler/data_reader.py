@@ -1,3 +1,5 @@
+import numpy
+
 from domain.problem import Shape, Material, Problem
 
 import ast
@@ -17,8 +19,13 @@ def read_shapes_from_csv(file_name, spacing, scale=1.0, max_shape_len: int = sys
             batch_id: str = row[0]
             shape_id: str = row[1]
             shape_num: int = int(row[2])
+            # Nested list version
             shape_polygon: List[List[float]] = ast.literal_eval(row[3])
             shape_polygon = [[node[0] * scale, node[1] * scale] for node in shape_polygon]
+            # Numpy version
+            # shape_polygon = numpy.array(ast.literal_eval(row[3])) * scale
+            # shape_polygon = [[node[0] * scale, node[1] * scale] for node in shape_polygon]
+
             shape_rotations: Tuple[int] = ast.literal_eval(row[4])
             material_id: str = row[5]
             # 保证所有多边形的坐标都是逆时针方向的

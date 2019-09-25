@@ -15,7 +15,8 @@ def generate_nfp(polygon1, polygon2):
     # print('simplify nfp len: {}'.format(len(result)))
     # result = pyclipper.CleanPolygon(result, 1.01)
     # print('clean nfp len: {}'.format(len(result)))
-    return pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.10)
+    nfp = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
+    return _clear_2d_list(nfp)
 
 
 def generate_ifp(material: Material, shape: Shape, spacing):
@@ -85,7 +86,7 @@ def diff_ifp_nfps(ifp, nfp):
         #
         # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
-        # TODO 只去除NFP并集中的孔洞，允许形状为非凸（计算结果会有问题）
+        # TODO 只去除NFP并集中的孔洞，允许形状为非凸
         union_polygon_without_holes = [each_union_nfp for each_union_nfp in union_nfp
                                        if pyclipper.Orientation(each_union_nfp)]
         pc.AddPaths(union_polygon_without_holes, pyclipper.PT_CLIP, True)
