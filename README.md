@@ -8,10 +8,14 @@
 
 ### 依赖项（由`pipreqs`生成）
 
-- matplotlib==3.1.1
-- pyclipper==1.1.0.post1
-- Shapely==1.6.4.post2
-- typing==3.7.4.1
+```
+  numpy==1.15.2
+  matplotlib==3.1.1
+  pyclipper==1.1.0.post1
+  Shapely==1.6.4.post2
+  typing==3.7.4.1
+  PyYAML==5.1.2
+```
 
 ## 初赛算例
 
