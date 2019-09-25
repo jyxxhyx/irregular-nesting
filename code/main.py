@@ -5,10 +5,44 @@ from local_search.framework.tabu_search import TabuSearch
 from local_search.domain.solution import Solution
 from output_handler import drawer, writer
 
+import logging
+import logging.config
 import math
 import os
 from pprint import pprint
 from timeit import default_timer as timer
+import yaml
+
+
+def setup_logging(logging_config_path="logging.yaml", level=logging.INFO):
+    """
+    Set up logging file configuration
+
+    Args:
+    logging_config_path (str):   logging configuration file path,
+                                    by default, it is current path
+    level (logging object):      logging.INFO (by default), logging.DEBUG ...
+
+    Return:
+    None
+
+    Raise:
+    None
+    """
+
+    # check configuration path
+    path = logging_config_path
+    if os.path.exists(path):
+        with open(path, "rt") as f:
+            config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    else:
+        # if path does not exist, use default logging configuration, output logging.log
+        logging.basicConfig(level=level,
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%a, %d %b %Y %H:%M:%S',
+                            filename='logging.log',
+                            filemode='w')
 
 
 def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
@@ -25,6 +59,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     -------
 
     """
+    logger = logging.getLogger(__name__)
     start = timer()
 
     material = data_reader.read_material_from_csv(material_file, scale)
@@ -34,12 +69,12 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
 
     shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing, scale)
     batch = shape_list[0].batch_id
-    print('Start to solve batch {}!'.format(batch))
+    logging.info('Start to solve batch {}!'.format(batch))
 
-    instance = problem.Problem(shape_list, material, offset_spacing * scale)
+    instance = problem.Problem(shape_list, material, offset_spacing)
 
     total_area = sum(shape.area for shape in shape_list)
-    print('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 / scale**2))
+    logging.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 / scale**2))
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance)
@@ -49,10 +84,10 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
-    print('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
-    print('Material area:\t{:.3f}m2'.format(objective * material.height / 1000**2 / scale**2))
+    logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
+    logger.info('Material area:\t{:.3f}m2'.format(objective * material.height / 1000**2 / scale**2))
     utilization = total_area / (objective * material.height)
-    print('Material utilization:\t{:.3f}%'.format(utilization * 100))
+    logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
     file_name = os.path.join(os.pardir, 'submit', 'DatasetA', file_name)
     writer.write_to_csv(file_name, instance, solution)
@@ -60,7 +95,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     file_name = os.path.join(os.pardir, 'figure', 'DatasetA', file_name)
     drawer.draw_result(instance, solution.objective, solution.positions, file_name)
     end = timer()
-    print('Total solution time:\t{:.3f}s\n'.format(end - start))
+    logger.info('Total solution time:\t{:.3f}s\n'.format(end - start))
     return
 
 
@@ -108,4 +143,6 @@ def main():
 
 
 if __name__ == '__main__':
+    logging_path = os.path.join(os.getcwd(), "logging.yaml")
+    setup_logging(logging_path)
     main()
