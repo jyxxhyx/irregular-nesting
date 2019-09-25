@@ -16,6 +16,7 @@ class TabuSearch(BaseAlg):
         self.best_solution: Union[Solution, None] = None
         self.current_solution: Union[Solution, None] = None
         self.tabu_list = deque(maxlen=10)
+        self.nfps = dict()
         return
 
     def solve(self):
@@ -24,7 +25,7 @@ class TabuSearch(BaseAlg):
         # initial_sequence = rectangular_area_descending(self.problem)
         # initial_sequence = diagonal_descending(self.problem)
         self.current_solution = Solution(initial_sequence)
-        self.current_solution.generate_positions(self.problem)
+        self.current_solution.generate_positions(self.problem, self.nfps)
         self.current_solution.generate_objective(self.problem)
         self.best_solution = Solution(copy(initial_sequence), deepcopy(self.current_solution.positions),
                                       self.current_solution.objective)

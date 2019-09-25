@@ -144,5 +144,5 @@ def main():
 
 if __name__ == '__main__':
     logging_path = os.path.join(os.getcwd(), "logging.yaml")
-    setup_logging(logging_path, logging.DEBUG)
+    setup_logging(logging_path)
     main()

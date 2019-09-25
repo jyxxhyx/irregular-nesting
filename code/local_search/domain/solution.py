@@ -19,8 +19,8 @@ class Solution:
             self.objective = objective
         return
 
-    def generate_positions(self, problem: Problem):
-        self.positions = positition.bottom_left_heuristic(problem, self.sequences)
+    def generate_positions(self, problem: Problem, nfps):
+        self.positions = positition.bottom_left_heuristic(problem, self.sequences, nfps)
         return
 
     def generate_objective(self, problem: Problem):
