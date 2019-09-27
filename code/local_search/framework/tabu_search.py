@@ -1,6 +1,6 @@
 from local_search.framework.base_alg import BaseAlg
 from local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
-    rectangular_area_descending, rectangular_diagonal_descending
+    rectangular_area_descending, rectangular_diagonal_descending, sampling_based_on_offset_polygon_area_square
 from local_search.improvement.perturb import single_shuffle
 from local_search.domain.solution import Solution
 from domain.problem import Problem
@@ -24,6 +24,7 @@ class TabuSearch(BaseAlg):
         initial_sequence = offset_polygon_area_descending(self.problem)
         # initial_sequence = rectangular_area_descending(self.problem)
         # initial_sequence = diagonal_descending(self.problem)
+        # initial_sequence = sampling_based_on_offset_polygon_area_square(self.problem)
         self.current_solution = Solution(initial_sequence)
         self.current_solution.generate_positions(self.problem, self.nfps)
         self.current_solution.generate_objective(self.problem)
