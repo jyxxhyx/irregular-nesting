@@ -100,5 +100,5 @@ def weighted_shuffle(weight):
         j = bisect_right(cum_weights, rnd)
         result[i] = indices[j]
         cum_weights[j:] -= weight[j]
-    logger.info(result)
+    logger.debug(result)
     return result

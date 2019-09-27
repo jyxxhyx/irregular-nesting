@@ -15,6 +15,7 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps) -> Dict[int, Positio
     positioned_polygons = list()
     positioned_polygon_indices = list()
 
+    # TODO ifp计算逻辑简化后，可以不纪录base_subject
     base_subject = material.get_margin_polygon(material.width)
 
     shape = problem.shapes[sequence[0]]
