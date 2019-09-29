@@ -4,6 +4,7 @@ import logging
 import numbers
 from pprint import pprint
 from typing import List
+import multiprocessing
 
 import pyclipper
 from shapely.geometry import MultiPoint
@@ -19,6 +20,15 @@ def generate_nfp(polygon1, polygon2):
     logger.debug('Clean nfp size: {}'.format(sum(len(element) for element in result)))
     # result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
     return _clean_empty_element_nested_list(result)
+
+
+def generate_nfp_pool(polygon1, polygon2, shape1_str, shape2_str):
+    logger = logging.getLogger(__name__)
+    result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(
+        pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
+    result = _clean_empty_element_nested_list(result)
+    logger.info('{}-{}'.format(shape1_str, shape2_str))
+    return result, shape1_str, shape2_str
 
 
 def generate_ifp(material: Material, shape: Shape, spacing):
