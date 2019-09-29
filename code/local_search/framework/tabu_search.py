@@ -11,6 +11,7 @@ from itertools import combinations
 from copy import deepcopy, copy
 from typing import Union
 import logging
+import os
 import multiprocessing
 from multiprocessing import Pool
 
@@ -63,11 +64,15 @@ class TabuSearch(BaseAlg):
                                                            for single_polygon in single_nfp]
         return
 
-    def initialize_nfps_pool(self, number_processes: int = 1):
+    def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
+        #todo 最好不要超过cpu数
+        
         logger = logging.getLogger(__name__)
         p = Pool(processes=number_processes)
         logger.info('Prepare the input.')
-        input_list = [(shape1.offset_polygon, shape2.offset_polygon, shape1.shape_id, shape2.shape_id)
+
+        input_list = [{'polygon1': shape1.offset_polygon, 'polygon2': shape2.offset_polygon,
+                       'shape1_str': shape1.shape_id, 'shape2_str': shape2.shape_id}
                       for shape1, shape2 in combinations(self.problem.shapes, 2)]
         logger.info('Start to map.')
         result = p.map(generate_nfp_pool, input_list)
@@ -76,6 +81,7 @@ class TabuSearch(BaseAlg):
             self.nfps[shape2_str, shape1_str] = [[[-point[0], -point[1]] for point in single_polygon]
                                                  for single_polygon in single_nfp]
         p.close()
+        p.join()
+        p.terminate()
 
         return
-

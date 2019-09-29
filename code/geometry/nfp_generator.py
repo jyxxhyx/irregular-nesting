@@ -22,7 +22,12 @@ def generate_nfp(polygon1, polygon2):
     return _clean_empty_element_nested_list(result)
 
 
-def generate_nfp_pool(polygon1, polygon2, shape1_str, shape2_str):
+def generate_nfp_pool(info):
+    polygon1 = info['polygon1']
+    polygon2 = info['polygon2']
+    shape1_str = info['shape1_str']
+    shape2_str = info['shape2_str']
+
     logger = logging.getLogger(__name__)
     result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(
         pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
