@@ -17,7 +17,7 @@ def generate_nfp(polygon1, polygon2):
     logger.debug('Simplify nfp size: {}'.format(sum(len(element) for element in result)))
     result = pyclipper.CleanPolygons(result, 1.20)
     logger.debug('Clean nfp size: {}'.format(sum(len(element) for element in result)))
-    # nfp = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
+    # result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
     return _clean_empty_element_nested_list(result)
 
 

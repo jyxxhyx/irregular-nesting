@@ -12,4 +12,9 @@ def calculate_objective(problem: Problem, positions):
 
 def check_feasibility():
     # TODO Apply multiple Point-in-polygon tests
+
+    # Step 1. Update offset polygon with high precision
+
+    # Step 2. Perform a huge number of pip tests
+
     return

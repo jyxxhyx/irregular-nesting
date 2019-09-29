@@ -56,6 +56,13 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps) -> Dict[int, Positio
         # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
         _, min_idx, min_idx1 = min((weight * v[0] + v[1], i, j) for j, ifp_single_polygon in enumerate(ifp_polygon)
                                    for i, v in enumerate(ifp_single_polygon))
+
+        # current_material_len = max(v[0] for ifp_single_polygon in ifp_polygon for v in ifp_single_polygon)
+        # shape_len = shape.max_x - shape.min_x
+        # _, _, min_idx, min_idx1 = min((weight * max(v[0] + shape_len, current_material_len), weight * v[0] + v[1], i, j)
+        #                               for j, ifp_single_polygon in enumerate(ifp_polygon)
+        #                               for i, v in enumerate(ifp_single_polygon))
+
         positions[idx] = Position(ifp_polygon[min_idx1][min_idx][0], ifp_polygon[min_idx1][min_idx][1])
 
         positioned_polygon = shape.generate_positioned_offset_polygon(positions[idx])
