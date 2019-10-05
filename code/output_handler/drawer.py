@@ -231,15 +231,31 @@ def draw_result(problem: Problem, objective, positions, file_name):
     face_colors = []
     edge_colors = []
     # 画边框
-    polygon = Polygon(problem.material.get_polygon(width))
-    face_colors.append('none')
-    edge_colors.append('purple')
-    patches.append(polygon)
+    material_polygon = problem.material.get_polygon(width)
+    if isinstance(material_polygon[0][0], numbers.Number):
+        polygon = Polygon(material_polygon)
+        face_colors.append('none')
+        edge_colors.append('purple')
+        patches.append(polygon)
+    else:
+        for each_material_polygon in material_polygon:
+            polygon = Polygon(each_material_polygon)
+            face_colors.append('none')
+            edge_colors.append('purple')
+            patches.append(polygon)
     # 画边际线
-    polygon = Polygon(problem.material.get_margin_polygon(width))
-    face_colors.append('none')
-    edge_colors.append('red')
-    patches.append(polygon)
+    margin_polygon = problem.material.get_margin_polygon(width)
+    if isinstance(margin_polygon[0][0], numbers.Number):
+        polygon = Polygon(margin_polygon)
+        face_colors.append('none')
+        edge_colors.append('red')
+        patches.append(polygon)
+    else:
+        for each_margin_polygon in margin_polygon:
+            polygon = Polygon(each_margin_polygon)
+            face_colors.append('none')
+            edge_colors.append('red')
+            patches.append(polygon)
     # 画形状
     for i, shape in enumerate(problem.shapes):
         position = positions[i]

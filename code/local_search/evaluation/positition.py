@@ -15,19 +15,26 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps) -> Dict[int, Positio
     positioned_polygons = list()
     positioned_polygon_indices = list()
 
-    # TODO ifp计算逻辑简化后，可以不纪录base_subject
+    # TODO ifp计算逻辑简化后，可以不纪录base_subject，目前debug需要，先保留
     base_subject = material.get_margin_polygon(material.width)
+
+    weight = 1
 
     shape = problem.shapes[sequence[0]]
     ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
-    positions[sequence[0]] = Position(material.margin, material.margin)
+    # 由于瑕疵的存在，第一个零件不能直接放在左下角位置
+    for hole in material.holes:
+        nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon)
+        ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
+
+    _, min_idx, min_idx1 = min((weight * v[0] + v[1], i, j) for j, ifp_single_polygon in enumerate(ifp_polygon)
+                               for i, v in enumerate(ifp_single_polygon))
+    positions[sequence[0]] = Position(ifp_polygon[min_idx1][min_idx][0], ifp_polygon[min_idx1][min_idx][1])
 
     positioned_polygon = shape.generate_positioned_offset_polygon(positions[sequence[0]])
     base_subject = diff_ifp_nfps(base_subject, positioned_polygon)
     positioned_polygons.append(positioned_polygon)
     positioned_polygon_indices.append(sequence[0])
-
-    weight = 1
 
     for outer_iter, idx in enumerate(sequence[1:]):
         if outer_iter % 10 == 9:
@@ -37,16 +44,20 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps) -> Dict[int, Positio
         # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
         ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
 
+        for hole in material.holes:
+            nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon)
+            ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
+
         for inner_iter, polygon in enumerate(positioned_polygons):
             # nfp_polygon = generate_nfp(shape.offset_polygon, polygon)
             positioned_shape = problem.shapes[positioned_polygon_indices[inner_iter]]
             position = positions[positioned_polygon_indices[inner_iter]]
             nfp_polygon = _get_nfp(shape, positioned_shape, nfps, position)
-            # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, current_polygons,
+            # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, positioned_polygons,
             #                       shape.offset_polygon, outer_iter,
             #                       inner_iter, 'a', problem.shapes[0].batch_id)
             ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_polygon)
-            # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, current_polygons,
+            # drawer.draw_iteration(problem, ifp_polygon, nfp_polygon, base_subject, positioned_polygons,
             #                       shape.offset_polygon, outer_iter,
             #                       inner_iter, 'b', problem.shapes[0].batch_id)
 
