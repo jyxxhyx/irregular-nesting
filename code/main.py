@@ -12,6 +12,7 @@ import os
 from pprint import pprint
 from timeit import default_timer as timer
 import yaml
+from zipfile import ZipFile
 
 
 def setup_logging(logging_config_path="logging.yaml", level=logging.INFO):
@@ -138,6 +139,16 @@ def _check_create_result_directory(input_dir):
     return
 
 
+def _write_zip_file(input_dir):
+    output_dir = input_dir.replace('data', 'submit')
+    with ZipFile('submit.zip', 'w') as zip_writer:
+        zip_writer.write(output_dir)
+        for file in os.listdir(output_dir):
+            result_file = os.path.join(output_dir, file)
+            zip_writer.write(result_file)
+    return
+
+
 def main(target_folders):
     material_str = 'mianliao'
     shape_str = 'lingjian'
@@ -160,6 +171,7 @@ def main(target_folders):
                         material_file = os.path.join(instance_dir, file)
                         shape_file = material_file.replace(material_str, shape_str)
                         _solve_one_instance(material_file, shape_file, nick_name, scale, input_dir)
+                _write_zip_file(instance_dir)
 
 
 if __name__ == '__main__':
