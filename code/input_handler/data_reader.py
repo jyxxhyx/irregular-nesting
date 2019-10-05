@@ -1,6 +1,7 @@
 import numpy
 
 from domain.problem import Shape, Material, Problem
+from domain.material import Hole
 
 import ast
 import csv
@@ -10,7 +11,7 @@ from typing import List, Tuple
 import pyclipper
 
 
-def read_shapes_from_csv(file_name, spacing, scale=1.0, max_shape_len: int = sys.maxsize):
+def read_shapes_from_csv(file_name, spacing, scale: int = 1, max_shape_len: int = sys.maxsize):
     shape_list = list()
     with open(file_name, encoding='utf-8') as csv_file:
         contents = csv.reader(csv_file)
@@ -58,10 +59,15 @@ def read_material_from_csv(file_name, scale=1):
         area = row_material[1].split('*')
         width = int(area[0]) * scale
         height = int(area[1]) * scale
-        hole = None
+        holes = None
         if row_material[2]:
-            hole = None
+            holes = list()
+            contents_holes = ast.literal_eval(row_material[2])
+            for each_hole in contents_holes:
+                coordinates = [each_hole[0][0] * scale, each_hole[0][1] * scale]
+                hole = Hole(coordinates, each_hole[1] * scale)
+                holes.append(hole)
         spacing = int(row_material[3]) * scale
         margin = int(row_material[4]) * scale
-        material = Material(material_id, height, width, spacing, margin, hole)
+        material = Material(material_id, height, width, spacing, margin, holes)
     return material
