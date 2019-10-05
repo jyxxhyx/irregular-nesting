@@ -53,14 +53,12 @@ class Shape:
         offset
         meter_limit
         arc_tolerance:
-        scale
         precision
 
         Returns
         -------
 
         """
-        # TODO pyclipper存在取整的精度损失问题，应该读入数据时就把所有坐标值扩大100倍后计算，输出结果时才还原
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
         # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
@@ -81,9 +79,6 @@ class Shape:
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
-    def approximate_offset_polygon(self, tolerance):
-        return
-
     def calculate_origin_area(self):
         return pyclipper.Area(self.polygon)
 
@@ -98,7 +93,7 @@ class Shape:
 
     def generate_positioned_polygon_output(self, position: Position, scale=1):
         """
-        输出结果是要用到，需要根据scale还原。
+        输出结果时要用到，需要根据scale还原。
         Parameters
         ----------
         position
