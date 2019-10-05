@@ -12,6 +12,7 @@ import os
 from pprint import pprint
 from timeit import default_timer as timer
 import yaml
+from zipfile import ZipFile
 
 
 def setup_logging(logging_config_path="logging.yaml", level=logging.INFO):
@@ -45,7 +46,7 @@ def setup_logging(logging_config_path="logging.yaml", level=logging.INFO):
                             filemode='w')
 
 
-def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
+def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folder):
     """
     求解一个算例。
     Parameters
@@ -54,6 +55,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
     shape_file: 零件输入路径
     nick_name: 用户昵称（输出文件要用）
     scale: 图形缩放比例
+    input_folder: 输入算例文件夹
 
     Returns
     -------
@@ -66,15 +68,15 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale=1):
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance)
-    # tabu_search.initialize_nfps()
-    tabu_search.initialize_nfps_pool()
+    tabu_search.initialize_nfps()
+    # tabu_search.initialize_nfps_pool()
     tabu_search.solve()
 
     # 获得结果，输出
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
-    _output_solution(instance, solution, objective, scale, nick_name, batch)
+    _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder)
 
     end = timer()
     logger.info('Total solution time:\t{:.3f}s\n'.format(end - start))
@@ -87,6 +89,10 @@ def _construct_instance(material_file, shape_file, scale):
     # TODO 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + 1
 
+    # 计算瑕疵的近似正多边形
+    for hole in material.holes:
+        hole.approximate_regular_polygon(20, offset_spacing)
+
     shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing, scale)
     batch = shape_list[0].batch_id
     logging.info('Start to solve batch {}!'.format(batch))
@@ -95,7 +101,7 @@ def _construct_instance(material_file, shape_file, scale):
     return instance, batch
 
 
-def _output_solution(instance, solution, objective, scale, nick_name, batch):
+def _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder):
     logger = logging.getLogger(__name__)
     material = instance.material
     total_area = sum(shape.area for shape in instance.shapes)
@@ -105,10 +111,10 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch):
     utilization = total_area / (objective * material.height)
     logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, 'submit', 'DatasetA', file_name)
+    file_name = os.path.join(os.pardir, 'submit', input_folder, file_name)
     writer.write_to_csv(file_name, instance, solution)
     file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, 'figure', 'DatasetA', file_name)
+    file_name = os.path.join(os.pardir, 'figure', input_folder, file_name)
     drawer.draw_result(instance, solution.objective, solution.positions, file_name)
     return
 
@@ -133,7 +139,17 @@ def _check_create_result_directory(input_dir):
     return
 
 
-def main():
+def _write_zip_file(input_dir):
+    output_dir = input_dir.replace('data', 'submit')
+    with ZipFile('submit.zip', 'w') as zip_writer:
+        zip_writer.write(output_dir)
+        for file in os.listdir(output_dir):
+            result_file = os.path.join(output_dir, file)
+            zip_writer.write(result_file)
+    return
+
+
+def main(target_folders):
     material_str = 'mianliao'
     shape_str = 'lingjian'
     nick_name = 'jiangyincaijiao1'
@@ -143,20 +159,23 @@ def main():
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:
-            instance_dir = os.path.join(root, input_dir)
-            # 遍历各dataset下面不同算例文件
-            _check_create_result_directory(instance_dir)
-            for file in os.listdir(instance_dir):
-                # 根据面料输入来确定算例
-                if shape_str in file:
-                    pass
-                elif material_str in file:
-                    material_file = os.path.join(instance_dir, file)
-                    shape_file = material_file.replace(material_str, shape_str)
-                    _solve_one_instance(material_file, shape_file, nick_name, scale)
+            if input_dir in target_folders:
+                instance_dir = os.path.join(root, input_dir)
+                # 遍历各dataset下面不同算例文件
+                _check_create_result_directory(instance_dir)
+                for file in os.listdir(instance_dir):
+                    # 根据面料输入来确定算例
+                    if shape_str in file:
+                        pass
+                    elif material_str in file:
+                        material_file = os.path.join(instance_dir, file)
+                        shape_file = material_file.replace(material_str, shape_str)
+                        _solve_one_instance(material_file, shape_file, nick_name, scale, input_dir)
+                _write_zip_file(instance_dir)
 
 
 if __name__ == '__main__':
+    folders = ['DatasetB']
     logging_path = os.path.join(os.getcwd(), "logging.yaml")
     setup_logging(logging_path)
-    main()
+    main(folders)
