@@ -1,0 +1,26 @@
+folders: ['DatasetB']
+logging_config: 'logging.yaml'
+
+material_str: 'mianliao'
+shape_str: 'lingjian'
+nick_name: 'jiangyincaijiao1'
+
+scale: 10
+extra_offset: 1
+polygon_vertices: 20
+
+initial_weight: 1
+increment_weight: 1/10
+
+is_debug: false
+
+clipper:
+  meter_limit: 2
+  arc_tolerance: 0.25
+  precision: 1.2
+
+input_folder: 'data'
+output_folder: 'submit'
+figure_folder: 'figure'
+
+zip_file: 'submit.zip'

@@ -8,7 +8,7 @@ from copy import copy, deepcopy
 import sys
 
 
-def single_improve(solution: Solution, problem: Problem, i: int, alg: BaseAlg):
+def single_improve(solution: Solution, problem: Problem, i: int, alg: BaseAlg, nfps, config):
     """
     给定一个序列和一个要改变的形状序号i，做局部改善（目前还没用到）
     Parameters
@@ -17,6 +17,7 @@ def single_improve(solution: Solution, problem: Problem, i: int, alg: BaseAlg):
     problem
     i
     alg
+    config
 
     Returns
     -------
@@ -29,7 +30,7 @@ def single_improve(solution: Solution, problem: Problem, i: int, alg: BaseAlg):
         if j != i:
             # Do move
             sequence[i], sequence[j] = sequence[j], sequence[i]
-            positions = bottom_left_heuristic(problem, sequence)
+            positions = bottom_left_heuristic(problem, sequence, nfps, config)
             objective = calculate_objective(problem, positions)
             if objective < temp_objective:
                 temp_solution = Solution(copy(sequence), deepcopy(positions), objective)

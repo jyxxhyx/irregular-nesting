@@ -10,13 +10,13 @@ import pyclipper
 from shapely.geometry import MultiPoint
 
 
-def generate_nfp(polygon1, polygon2):
+def generate_nfp(polygon1, polygon2, config_clipper):
     logger = logging.getLogger(__name__)
     result = pyclipper.MinkowskiDiff(polygon1, polygon2)
     logger.debug('Origin nfp size: {}'.format(sum(len(element) for element in result)))
     result = pyclipper.SimplifyPolygons(result)
     logger.debug('Simplify nfp size: {}'.format(sum(len(element) for element in result)))
-    result = pyclipper.CleanPolygons(result, 1.20)
+    result = pyclipper.CleanPolygons(result, config_clipper['precision'])
     logger.debug('Clean nfp size: {}'.format(sum(len(element) for element in result)))
     # result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
     return _clean_empty_element_nested_list(result)

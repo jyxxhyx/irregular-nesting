@@ -11,7 +11,7 @@ from typing import List, Tuple
 import pyclipper
 
 
-def read_shapes_from_csv(file_name, spacing, scale: int = 1, max_shape_len: int = sys.maxsize):
+def read_shapes_from_csv(file_name, spacing, config, scale: int = 1, max_shape_len: int = sys.maxsize):
     shape_list = list()
     with open(file_name, encoding='utf-8') as csv_file:
         contents = csv.reader(csv_file)
@@ -36,9 +36,9 @@ def read_shapes_from_csv(file_name, spacing, scale: int = 1, max_shape_len: int 
             else:
                 shape = Shape(shape_id, shape_num, shape_polygon, shape_rotations, batch_id, material_id)
 
-            # TODO 生成外延多边形的options：矩形，凸包，和实际的offset_polygon。矩形的浪费太多，结果不可行，
-            #  实际offset_polygon算出来的结果局部还有问题，目前用凸包的方案
-            shape.generate_offset_polygon(spacing)
+            shape.generate_offset_polygon(spacing, meter_limit=config['clipper']['meter_limit'],
+                                          arc_tolerance=config['clipper']['arc_tolerance'],
+                                          precision=config['clipper']['precision'])
             # shape.generate_convex_offset_polygon(spacing)
             # shape.generate_offset_rectangular(spacing)
 
