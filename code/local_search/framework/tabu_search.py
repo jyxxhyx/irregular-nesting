@@ -17,8 +17,9 @@ from multiprocessing import Pool
 
 
 class TabuSearch(BaseAlg):
-    def __init__(self, problem: Problem):
+    def __init__(self, problem: Problem, config):
         self.problem = problem
+        self.config = config
         self.best_solution: Union[Solution, None] = None
         self.current_solution: Union[Solution, None] = None
         self.tabu_list = deque(maxlen=10)
@@ -32,7 +33,7 @@ class TabuSearch(BaseAlg):
         # initial_sequence = diagonal_descending(self.problem)
         # initial_sequence = sampling_based_on_offset_polygon_area_square(self.problem)
         self.current_solution = Solution(initial_sequence)
-        self.current_solution.generate_positions(self.problem, self.nfps)
+        self.current_solution.generate_positions(self.problem, self.nfps, self.config)
         self.current_solution.generate_objective(self.problem)
         self.best_solution = Solution(copy(initial_sequence), deepcopy(self.current_solution.positions),
                                       self.current_solution.objective)
@@ -57,7 +58,7 @@ class TabuSearch(BaseAlg):
         for index, (shape1, shape2) in enumerate(combinations(self.problem.shapes, 2)):
             if index % 100 == 99:
                 logger.info('{} nfps calculated.'.format(index + 1))
-            single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon)
+            single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon, self.config['clipper'])
             # p1相对于p2的nfp取负即为p2相对于p1的nfp
             self.nfps[shape1.shape_id, shape2.shape_id] = single_nfp
             self.nfps[shape2.shape_id, shape1.shape_id] = [[[-point[0], -point[1]] for point in single_polygon]

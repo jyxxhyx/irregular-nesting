@@ -62,6 +62,7 @@ class Shape:
         pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
         # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        # TODO 考虑带孔零件的情况
         self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], precision)
         # self.offset_polygon = numpy.array(pyclipper.CleanPolygon(pco.Execute(offset)[0], precision))
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
