@@ -10,7 +10,7 @@ extra_offset: 1
 polygon_vertices: 20
 
 initial_weight: 1
-increment_weight: 1/10
+increment_weight: 0.1
 
 is_debug: false
 
