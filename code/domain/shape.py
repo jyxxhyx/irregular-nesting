@@ -92,6 +92,9 @@ class Shape:
     def calculate_diagonal_len(self):
         return math.sqrt((self.max_x - self.min_x) ** 2 + (self.max_y - self.min_y) ** 2)
 
+    def calculate_offset_width(self):
+        return self.max_x - self.min_x
+
     def generate_positioned_polygon_output(self, position: Position, scale=1):
         """
         输出结果时要用到，需要根据scale还原。

@@ -24,3 +24,4 @@ output_folder: 'submit'
 figure_folder: 'figure'
 
 zip_file: 'submit.zip'
+nfps_json: 'nfps.json'

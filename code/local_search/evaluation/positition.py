@@ -88,16 +88,16 @@ def _get_nfp(next_shape: Shape, positioned_shape: Shape, nfps: dict, position: P
     ----------
     next_shape
     positioned_shape
-    nfps: Dict[Tuple[str, str], List[List[List[float]]]]
+    nfps: Dict[str, List[List[List[float]]]]
     position
 
     Returns
     -------
 
     """
-    if (next_shape.shape_id, positioned_shape.shape_id) not in nfps:
-        nfps[next_shape.shape_id, positioned_shape.shape_id] = generate_nfp(next_shape.offset_polygon,
-                                                                            positioned_shape.offset_polygon,
-                                                                            config_clipper)
+    if (next_shape.shape_id + positioned_shape.shape_id) not in nfps:
+        nfps[next_shape.shape_id + positioned_shape.shape_id] = generate_nfp(next_shape.offset_polygon,
+                                                                             positioned_shape.offset_polygon,
+                                                                             config_clipper)
     return [[[position.x + node[0], position.y + node[1]]
-            for node in each_nfp] for each_nfp in nfps[next_shape.shape_id, positioned_shape.shape_id]]
+            for node in each_nfp] for each_nfp in nfps[next_shape.shape_id + positioned_shape.shape_id]]
