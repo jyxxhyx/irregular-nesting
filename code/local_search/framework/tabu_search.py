@@ -14,6 +14,7 @@ import logging
 import os
 import multiprocessing
 from multiprocessing import Pool
+import ujson
 
 
 class TabuSearch(BaseAlg):
@@ -53,20 +54,31 @@ class TabuSearch(BaseAlg):
     def get_current_objective(self):
         return self.current_solution.objective
 
-    def initialize_nfps(self):
+    def initialize_nfps(self, input_folder, config, batch_id):
         logger = logging.getLogger(__name__)
-        for index, (shape1, shape2) in enumerate(combinations(self.problem.shapes, 2)):
-            if index % 100 == 99:
-                logger.info('{} nfps calculated.'.format(index + 1))
-            single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon, self.config['clipper'])
-            # p1相对于p2的nfp取负即为p2相对于p1的nfp
-            self.nfps[shape1.shape_id, shape2.shape_id] = single_nfp
-            self.nfps[shape2.shape_id, shape1.shape_id] = [[[-point[0], -point[1]] for point in single_polygon]
-                                                           for single_polygon in single_nfp]
+
+        json_file_name = os.path.join(os.pardir, config['output_folder'], input_folder, batch_id + '_' + config['nfps_json'])
+        if os.path.isfile(json_file_name):
+            logger.info('NFPs json file exists.')
+            with open(json_file_name, 'r') as json_file:
+                self.nfps = ujson.load(json_file)
+        else:
+            logger.info('NFPs json file does not exist. Start to calculate NFPs.')
+            for index, (shape1, shape2) in enumerate(combinations(self.problem.shapes, 2)):
+                if index % 100 == 99:
+                    logger.info('{} nfps calculated.'.format(index + 1))
+                single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon, self.config['clipper'])
+                # p1相对于p2的nfp取负即为p2相对于p1的nfp
+                self.nfps[shape1.shape_id + shape2.shape_id] = single_nfp
+                self.nfps[shape2.shape_id + shape1.shape_id] = [[[-point[0], -point[1]] for point in single_polygon]
+                                                                for single_polygon in single_nfp]
+            with open(json_file_name, 'w') as json_file:
+                ujson.dump(self.nfps, json_file)
+                logger.info('NFPs saved to file: {}'.format(json_file_name))
         return
 
     def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
-        #todo 最好不要超过cpu数
+        # todo 最好不要超过cpu数
         
         logger = logging.getLogger(__name__)
         p = Pool(processes=number_processes)

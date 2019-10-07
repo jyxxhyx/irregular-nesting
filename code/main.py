@@ -68,7 +68,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folde
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance, config)
-    tabu_search.initialize_nfps()
+    tabu_search.initialize_nfps(input_folder, config, batch)
     # tabu_search.initialize_nfps_pool()
     tabu_search.solve()
 
@@ -76,7 +76,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folde
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
-    _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder)
+    _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder, config)
 
     end = timer()
     logger.info('Total solution time:\t{:.3f}s\n'.format(end - start))
@@ -101,7 +101,7 @@ def _construct_instance(material_file, shape_file, scale, config):
     return instance, batch
 
 
-def _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder):
+def _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder, config):
     logger = logging.getLogger(__name__)
     material = instance.material
     total_area = sum(shape.area for shape in instance.shapes)
@@ -111,10 +111,10 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch, inp
     utilization = total_area / (objective * material.height)
     logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, 'submit', input_folder, file_name)
+    file_name = os.path.join(os.pardir, config['output_folder'], input_folder, file_name)
     writer.write_to_csv(file_name, instance, solution)
     file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, 'figure', input_folder, file_name)
+    file_name = os.path.join(os.pardir, config['figure_folder'], input_folder, file_name)
     drawer.draw_result(instance, solution.objective, solution.positions, file_name)
     return
 

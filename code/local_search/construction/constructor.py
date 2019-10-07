@@ -35,6 +35,21 @@ def offset_polygon_area_descending(problem: Problem):
                                      reverse=True)]
 
 
+def offset_polygon_width_descending(problem: Problem):
+    """
+    按照外延多边形长度降序排列
+    Parameters
+    ----------
+    problem
+
+    Returns
+    -------
+
+    """
+    return [idx for idx, _ in sorted(enumerate(problem.shapes), key=lambda value: value[1].calculate_offset_width(),
+                                     reverse=True)]
+
+
 def rectangular_area_descending(problem: Problem):
     """
     按照最小覆盖长方形（不考虑旋转）面积降序排列
