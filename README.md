@@ -14,6 +14,7 @@
   pyclipper==1.1.0.post1
   Shapely==1.6.4.post2
   typing==3.7.4.1
+  ujson==1.35
   PyYAML==5.1.2
 ```
 
@@ -34,6 +35,7 @@
 
 - [x] ~~用numpy存储坐标点，提升计算效率~~（暂时没啥改善）
 - [x] NFP计算结果存储，方便以后local search时候调用
+  - [ ] NFP结果与问题批次、clipper参数、offset、scale参数相关，结果命名中需要区分。
 - [ ] local search部分tabu search方法实现
 - [ ] 零件旋转相关的处理（坐标变化，NFP计算）
 - [x] 复赛中面料上圆形瑕疵的处理
