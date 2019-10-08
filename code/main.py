@@ -3,6 +3,7 @@ from geometry import nfp_generator
 from input_handler import data_reader, env
 from local_search.framework.tabu_search import TabuSearch
 from local_search.domain.solution import Solution
+from local_search.evaluation.evaluation import check_feasibility_distance
 from output_handler import drawer, writer
 
 import logging
@@ -76,6 +77,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folde
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
+    check_feasibility_distance(solution, instance, scale)
     _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder, config)
 
     end = timer()

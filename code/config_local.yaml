@@ -6,8 +6,8 @@ shape_str: 'lingjian'
 nick_name: 'jiangyincaijiao1'
 
 scale: 10
-extra_offset: 1
-polygon_vertices: 20
+extra_offset: 2
+polygon_vertices: 100
 
 initial_weight: 1
 increment_weight: 0.1
@@ -17,7 +17,7 @@ is_debug: false
 clipper:
   meter_limit: 2
   arc_tolerance: 0.25
-  precision: 1.2
+  precision: 1.01
 
 input_folder: 'data'
 output_folder: 'submit'
