@@ -10,7 +10,7 @@ class Solution:
     def __init__(self, sequence, positions=None, objective=None):
         self.sequences = sequence
         if positions is None:
-            self.positions = list()
+            self.positions = dict()
         else:
             self.positions = positions
         if objective is None:

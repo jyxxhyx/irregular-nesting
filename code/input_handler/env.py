@@ -38,7 +38,8 @@ def get_configuration():
     IO error
     """
     if not os.path.exists(CONFIG_PATH):
-        error_msg = "Configuration file {} does not exists!".format(CONFIG_PATH)
+        error_msg = "Configuration file {} does not exists!".format(
+            CONFIG_PATH)
         logging.error(error_msg)
         raise IOError(error_msg)
     else:

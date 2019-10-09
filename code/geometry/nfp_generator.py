@@ -13,11 +13,14 @@ from shapely.geometry import MultiPoint
 def generate_nfp(polygon1, polygon2, config_clipper):
     logger = logging.getLogger(__name__)
     result = pyclipper.MinkowskiDiff(polygon1, polygon2)
-    logger.debug('Origin nfp size: {}'.format(sum(len(element) for element in result)))
+    logger.debug('Origin nfp size: {}'.format(
+        sum(len(element) for element in result)))
     result = pyclipper.SimplifyPolygons(result)
-    logger.debug('Simplify nfp size: {}'.format(sum(len(element) for element in result)))
+    logger.debug('Simplify nfp size: {}'.format(
+        sum(len(element) for element in result)))
     result = pyclipper.CleanPolygons(result, config_clipper['precision'])
-    logger.debug('Clean nfp size: {}'.format(sum(len(element) for element in result)))
+    logger.debug('Clean nfp size: {}'.format(
+        sum(len(element) for element in result)))
     # result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
     return _clean_empty_element_nested_list(result)
 
@@ -29,8 +32,9 @@ def generate_nfp_pool(info):
     shape2_str = info['shape2_str']
 
     logger = logging.getLogger(__name__)
-    result = pyclipper.CleanPolygons(pyclipper.SimplifyPolygons(
-        pyclipper.MinkowskiDiff(polygon1, polygon2)), 1.20)
+    result = pyclipper.CleanPolygons(
+        pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1,
+                                                           polygon2)), 1.20)
     result = _clean_empty_element_nested_list(result)
     logger.info('{}-{}'.format(shape1_str, shape2_str))
     return result, shape1_str, shape2_str
@@ -64,7 +68,8 @@ def intersect_polygons(polygon1, polygon2):
         pc.AddPath(polygon2, pyclipper.PT_SUBJECT, True)
     else:
         pc.AddPaths(polygon2, pyclipper.PT_SUBJECT, True)
-    return pc.Execute(pyclipper.CT_INTERSECTION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+    return pc.Execute(pyclipper.CT_INTERSECTION, pyclipper.PFT_EVENODD,
+                      pyclipper.PFT_EVENODD)
 
 
 def diff_ifp_nfps(ifp, nfp):
@@ -93,7 +98,8 @@ def diff_ifp_nfps(ifp, nfp):
 
         pc_temp.AddPaths(nfp, pyclipper.PT_SUBJECT, True)
 
-        union_nfp = pc_temp.Execute(pyclipper.CT_UNION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+        union_nfp = pc_temp.Execute(pyclipper.CT_UNION, pyclipper.PFT_EVENODD,
+                                    pyclipper.PFT_EVENODD)
         # 此处保守起见，取了NFP并集的凸包
         # temp_union_nfp = union_nfp[0]
         # for i in range(1, len(union_nfp)):
@@ -104,10 +110,13 @@ def diff_ifp_nfps(ifp, nfp):
         # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
         # TODO 只去除NFP并集中的孔洞，允许形状为非凸
-        union_polygon_without_holes = [each_union_nfp for each_union_nfp in union_nfp
-                                       if pyclipper.Orientation(each_union_nfp)]
+        union_polygon_without_holes = [
+            each_union_nfp for each_union_nfp in union_nfp
+            if pyclipper.Orientation(each_union_nfp)
+        ]
         pc.AddPaths(union_polygon_without_holes, pyclipper.PT_CLIP, True)
-    result = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+    result = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD,
+                        pyclipper.PFT_EVENODD)
     return result
 
 

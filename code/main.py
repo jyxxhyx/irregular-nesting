@@ -40,14 +40,17 @@ def setup_logging(logging_config_path="logging.yaml", level=logging.INFO):
         logging.config.dictConfig(configuration)
     else:
         # if path does not exist, use default logging configuration, output logging.log
-        logging.basicConfig(level=level,
-                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                            datefmt='%a, %d %b %Y %H:%M:%S',
-                            filename='logging.log',
-                            filemode='w')
+        logging.basicConfig(
+            level=level,
+            format=
+            '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+            datefmt='%a, %d %b %Y %H:%M:%S',
+            filename='logging.log',
+            filemode='w')
 
 
-def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folder, config):
+def _solve_one_instance(material_file, shape_file, nick_name, scale,
+                        input_folder, config):
     """
     求解一个算例。
     Parameters
@@ -65,7 +68,8 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folde
     logger = logging.getLogger(__name__)
     start = timer()
 
-    instance, batch = _construct_instance(material_file, shape_file, scale, config)
+    instance, batch = _construct_instance(material_file, shape_file, scale,
+                                          config)
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance, config)
@@ -78,7 +82,8 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale, input_folde
     objective = tabu_search.get_best_objective()
 
     check_feasibility_distance(solution, instance, scale)
-    _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder, config)
+    _output_solution(instance, solution, objective, scale, nick_name, batch,
+                     input_folder, config)
 
     end = timer()
     logger.info('Total solution time:\t{:.3f}s\n'.format(end - start))
@@ -93,9 +98,11 @@ def _construct_instance(material_file, shape_file, scale, config):
 
     # 计算瑕疵的近似正多边形
     for hole in material.holes:
-        hole.approximate_regular_polygon(config['polygon_vertices'], offset_spacing)
+        hole.approximate_regular_polygon(config['polygon_vertices'],
+                                         offset_spacing)
 
-    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing, config, scale)
+    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing,
+                                                  config, scale)
     batch = shape_list[0].batch_id
     logging.info('Start to solve batch {}!'.format(batch))
 
@@ -103,21 +110,27 @@ def _construct_instance(material_file, shape_file, scale, config):
     return instance, batch
 
 
-def _output_solution(instance, solution, objective, scale, nick_name, batch, input_folder, config):
+def _output_solution(instance, solution, objective, scale, nick_name, batch,
+                     input_folder, config):
     logger = logging.getLogger(__name__)
     material = instance.material
     total_area = sum(shape.area for shape in instance.shapes)
-    logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000 ** 2 / scale ** 2))
+    logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
+                                                         scale**2))
     logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
-    logger.info('Material area:\t{:.3f}m2'.format(objective * material.height / 1000 ** 2 / scale ** 2))
+    logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
+                                                  1000**2 / scale**2))
     utilization = total_area / (objective * material.height)
     logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['output_folder'], input_folder, file_name)
+    file_name = os.path.join(os.pardir, config['output_folder'], input_folder,
+                             file_name)
     writer.write_to_csv(file_name, instance, solution)
     file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['figure_folder'], input_folder, file_name)
-    drawer.draw_result(instance, solution.objective, solution.positions, file_name)
+    file_name = os.path.join(os.pardir, config['figure_folder'], input_folder,
+                             file_name)
+    drawer.draw_result(instance, solution.objective, solution.positions,
+                       file_name)
     return
 
 
@@ -132,17 +145,20 @@ def _check_create_result_directory(input_dir, config):
     -------
 
     """
-    output_dir = input_dir.replace(config['input_folder'], config['output_folder'])
+    output_dir = input_dir.replace(config['input_folder'],
+                                   config['output_folder'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    output_dir = input_dir.replace(config['input_folder'], config['figure_folder'])
+    output_dir = input_dir.replace(config['input_folder'],
+                                   config['figure_folder'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     return
 
 
 def _write_zip_file(input_dir, config):
-    output_dir = input_dir.replace(config['input_folder'], config['output_folder'])
+    output_dir = input_dir.replace(config['input_folder'],
+                                   config['output_folder'])
     with ZipFile(config['zip_file'], 'w') as zip_writer:
         zip_writer.write(output_dir)
         for file in os.listdir(output_dir):
@@ -172,8 +188,11 @@ def main(config):
                         pass
                     elif material_str in file:
                         material_file = os.path.join(instance_dir, file)
-                        shape_file = material_file.replace(material_str, shape_str)
-                        _solve_one_instance(material_file, shape_file, nick_name, scale, input_dir, config)
+                        shape_file = material_file.replace(
+                            material_str, shape_str)
+                        _solve_one_instance(material_file, shape_file,
+                                            nick_name, scale, input_dir,
+                                            config)
                 _write_zip_file(instance_dir, config)
 
 
