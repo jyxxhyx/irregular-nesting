@@ -9,13 +9,14 @@ import pyclipper
 
 
 class Problem:
-    def __init__(self, shapes: List[Shape], material: Material, offset_spacing):
+    def __init__(self, shapes: List[Shape], material: Material,
+                 offset_spacing):
         self.shapes = shapes
         self.material = material
         self.offset_spacing = offset_spacing
         return
 
     def check_orientation(self):
-        logging.info(all(pyclipper.Orientation(shape.polygon) for shape in self.shapes))
+        logging.info(
+            all(pyclipper.Orientation(shape.polygon) for shape in self.shapes))
         return
-

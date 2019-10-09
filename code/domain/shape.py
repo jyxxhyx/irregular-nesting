@@ -10,7 +10,8 @@ Position = namedtuple('pos', ['x', 'y'])
 
 
 class Shape:
-    def __init__(self, shape_id, count, polygon, rotations, batch_id, material_id):
+    def __init__(self, shape_id, count, polygon, rotations, batch_id,
+                 material_id):
         """
 
         Parameters
@@ -40,9 +41,14 @@ class Shape:
         min_y = self.min_y - offset
         max_x = self.max_x + offset
         max_y = self.max_y + offset
-        self.offset_polygon = [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
+        self.offset_polygon = [[min_x, min_y], [max_x, min_y], [max_x, max_y],
+                               [min_x, max_y]]
 
-    def generate_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, precision=1.20):
+    def generate_offset_polygon(self,
+                                offset,
+                                meter_limit=2,
+                                arc_tolerance=0.25,
+                                precision=1.20):
         """
         生成多边形的外延多边形（保证多边形之间的间距）。
         PyclipperOffset具体参数见如下链接：
@@ -59,24 +65,35 @@ class Shape:
         -------
 
         """
-        pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
+        pco = pyclipper.PyclipperOffset(miter_limit=meter_limit,
+                                        arc_tolerance=arc_tolerance)
         # pco.AddPath(pyclipper.scale_to_clipper(self.polygon, scale), pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        pco.AddPath(self.polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+        pco.AddPath(self.polygon, pyclipper.JT_ROUND,
+                    pyclipper.ET_CLOSEDPOLYGON)
         # TODO 考虑带孔零件的情况
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], precision)
+        self.offset_polygon = pyclipper.CleanPolygon(
+            pco.Execute(offset)[0], precision)
         # self.offset_polygon = numpy.array(pyclipper.CleanPolygon(pco.Execute(offset)[0], precision))
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
-    def generate_convex_offset_polygon(self, offset, meter_limit=2, arc_tolerance=0.25, precision=1.20):
-        pco = pyclipper.PyclipperOffset(miter_limit=meter_limit, arc_tolerance=arc_tolerance)
+    def generate_convex_offset_polygon(self,
+                                       offset,
+                                       meter_limit=2,
+                                       arc_tolerance=0.25,
+                                       precision=1.20):
+        pco = pyclipper.PyclipperOffset(miter_limit=meter_limit,
+                                        arc_tolerance=arc_tolerance)
         convex_polygon = MultiPoint(self.polygon).convex_hull
-        convex_polygon = [[node[0], node[1]] for node in list(convex_polygon.exterior.coords)]
+        convex_polygon = [[node[0], node[1]]
+                          for node in list(convex_polygon.exterior.coords)]
         # draw_simple_polygon(convex_polygon)
         # pco.AddPath(pyclipper.scale_to_clipper(convex_polygon, scale), pyclipper.JT_ROUND,
         #             pyclipper.ET_CLOSEDPOLYGON)
-        pco.AddPath(convex_polygon, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        self.offset_polygon = pyclipper.CleanPolygon(pco.Execute(offset)[0], precision)
+        pco.AddPath(convex_polygon, pyclipper.JT_ROUND,
+                    pyclipper.ET_CLOSEDPOLYGON)
+        self.offset_polygon = pyclipper.CleanPolygon(
+            pco.Execute(offset)[0], precision)
         # self.offset_polygon = pyclipper.scale_from_clipper(self.offset_polygon, scale)
         return
 
@@ -90,7 +107,8 @@ class Shape:
         return (self.max_x - self.min_x) * (self.max_y - self.min_y)
 
     def calculate_diagonal_len(self):
-        return math.sqrt((self.max_x - self.min_x) ** 2 + (self.max_y - self.min_y) ** 2)
+        return math.sqrt((self.max_x - self.min_x)**2 +
+                         (self.max_y - self.min_y)**2)
 
     def calculate_offset_width(self):
         return self.max_x - self.min_x
@@ -107,10 +125,12 @@ class Shape:
         -------
 
         """
-        return [[(x + position.x) / scale, (y + position.y) / scale] for x, y in self.polygon]
+        return [[(x + position.x) / scale, (y + position.y) / scale]
+                for x, y in self.polygon]
 
     def generate_positioned_offset_polygon(self, position: Position):
-        return [[x + position.x, y + position.y] for x, y in self.offset_polygon]
+        return [[x + position.x, y + position.y]
+                for x, y in self.offset_polygon]
 
     def _calculate_extreme_values(self):
         self.max_x = max(point[0] for point in self.polygon)
@@ -120,7 +140,8 @@ class Shape:
         return
 
     def _normalize(self):
-        self.polygon = [[p[0] - self.min_x, p[1] - self.min_y] for p in self.polygon]
+        self.polygon = [[p[0] - self.min_x, p[1] - self.min_y]
+                        for p in self.polygon]
         self.max_x -= self.min_x
         self.max_y -= self.min_y
         self.min_x = 0

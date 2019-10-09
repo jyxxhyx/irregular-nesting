@@ -29,13 +29,21 @@ class Hole:
         angle = math.pi * 2 / number_vertices
         regular_polygon_radius = self.radius / math.cos(angle) + spacing
         for i in range(number_vertices):
-            self.regular_polygon.append([self.center[0] + regular_polygon_radius * math.cos(i * angle),
-                                         self.center[1] + regular_polygon_radius * math.sin(i * angle)])
+            self.regular_polygon.append([
+                self.center[0] + regular_polygon_radius * math.cos(i * angle),
+                self.center[1] + regular_polygon_radius * math.sin(i * angle)
+            ])
         return
 
 
 class Material:
-    def __init__(self, material_id, height, width, spacing, margin, holes: Union[List[Hole], None] = None):
+    def __init__(self,
+                 material_id,
+                 height,
+                 width,
+                 spacing,
+                 margin,
+                 holes: Union[List[Hole], None] = None):
         """
 
         Parameters
@@ -72,7 +80,8 @@ class Material:
         -------
 
         """
-        outer_polygon = [[0, 0], [width, 0], [width, self.height], [0, self.height]]
+        outer_polygon = [[0, 0], [width, 0], [width, self.height],
+                         [0, self.height]]
         if self.holes is None:
             return outer_polygon
         else:
@@ -88,6 +97,4 @@ class Material:
         min_y = self.margin
         max_x = width - self.margin
         max_y = self.height - self.margin
-        return [[min_x, min_y], [max_x, min_y],
-                [max_x, max_y], [min_x, max_y]]
-
+        return [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
