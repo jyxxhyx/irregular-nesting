@@ -61,12 +61,17 @@ class TabuSearch(BaseAlg):
     def initialize_nfps(self, input_folder, config, batch_id):
         logger = logging.getLogger(__name__)
 
-        json_file_name = os.path.join(os.pardir, config['output_folder'],
-                                      input_folder,
-                                      batch_id + '_' + config['nfps_json'])
-        if os.path.isfile(json_file_name):
+        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}'.format(
+            batch_id, config['scale'], config['extra-offset'],
+            config['polygon_vertices'], config['clipper']['meter_limit'],
+            config['clipper']['arc_tolerance'], config['clipper']['precision'],
+            config['nfps_json'])
+
+        nfps_full_name = os.path.join(os.pardir, config['output_folder'],
+                                      input_folder, nfps_file_name)
+        if os.path.isfile(nfps_full_name):
             logger.info('NFPs json file exists.')
-            with open(json_file_name, 'r') as json_file:
+            with open(nfps_full_name, 'r') as json_file:
                 self.nfps = ujson.load(json_file)
         else:
             logger.info(
@@ -84,9 +89,9 @@ class TabuSearch(BaseAlg):
                           shape1.shape_id] = [[[-point[0], -point[1]]
                                                for point in single_polygon]
                                               for single_polygon in single_nfp]
-            with open(json_file_name, 'w') as json_file:
+            with open(nfps_full_name, 'w') as json_file:
                 ujson.dump(self.nfps, json_file)
-                logger.info('NFPs saved to file: {}'.format(json_file_name))
+                logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
     def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
