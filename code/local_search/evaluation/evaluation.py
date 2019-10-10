@@ -1,15 +1,81 @@
 from domain.problem import Problem
 
+import logging
+from itertools import combinations
+from shapely.geometry import Polygon, Point
+
 
 def calculate_objective(problem: Problem, positions):
     assert len(positions) == len(problem.shapes)
-    max_x = max(positions[i].x + problem.shapes[i].max_x for i in range(len(positions)))
-    min_x = min(positions[i].x + problem.shapes[i].min_x for i in range(len(positions)))
+    max_x = max(positions[i].x + problem.shapes[i].max_x
+                for i in range(len(positions)))
+    min_x = min(positions[i].x + problem.shapes[i].min_x
+                for i in range(len(positions)))
     # max_y = max(positions[i].y + problem.shapes[i].max_y for i in range(len(positions)))
     # min_y = min(positions[i].y + problem.shapes[i].min_y for i in range(len(positions)))
     return max_x - min_x
 
 
-def check_feasibility():
-    # TODO Apply multiple Point-in-polygon tests
+def check_feasibility_distance(solution, problem: Problem, scale):
+    logger = logging.getLogger(__name__)
+    logger.info('Start to check the result.')
+
+    feasibility_flag = _check_boundary(solution, problem)
+
+    # 检查零件间的距离
+    for (index1, shape1), (index2,
+                           shape2) in combinations(enumerate(problem.shapes),
+                                                   2):
+        pos1 = solution.positions[index1]
+        pos2 = solution.positions[index2]
+
+        polygon1 = shape1.generate_positioned_polygon_output(pos1, scale)
+        polygon2 = shape2.generate_positioned_polygon_output(pos2, scale)
+
+        shapely_polygon = Polygon(polygon2)
+
+        for point in polygon1:
+            shapely_point = Point(point)
+            temp_distance = shapely_polygon.exterior.distance(shapely_point)
+            if temp_distance * scale < problem.material.spacing:
+                feasibility_flag = False
+                logger.error(
+                    'Shapes {} and {} are too close to each other'.format(
+                        shape1.shape_id, shape2.shape_id))
+                logger.error(
+                    'Point {} to shape {}\'s distance is {:.3f}'.format(
+                        point, shape2.shape_id, temp_distance))
+    if feasibility_flag:
+        logger.info('Feasibility check passed.')
+    else:
+        logger.info('Feasibility check failed.')
     return
+
+
+def _check_boundary(solution, problem: Problem):
+    logger = logging.getLogger(__name__)
+    feasibility_flag = True
+    # 检查边框边界
+    max_x = max(solution.positions[i].x + problem.shapes[i].max_x
+                for i in range(len(solution.positions)))
+    min_x = min(solution.positions[i].x + problem.shapes[i].min_x
+                for i in range(len(solution.positions)))
+    max_y = max(solution.positions[i].y + problem.shapes[i].max_y
+                for i in range(len(solution.positions)))
+    min_y = min(solution.positions[i].y + problem.shapes[i].min_y
+                for i in range(len(solution.positions)))
+
+    material = problem.material
+    material_max_x = material.width - material.margin
+    material_min_x = material.margin
+    material_max_y = material.height - material.margin
+    material_min_y = material.margin
+
+    if max_x > material_max_x or max_y > material_max_y or min_x < material_min_x or min_y < material_min_y:
+        logger.error('Positions of polygons: {}-{}, {}-{}'.format(
+            min_x, max_x, min_y, max_y))
+        logger.error('Margin of material: {}-{}, {}-{}'.format(
+            material_min_x, material_max_x, material_min_y, material_max_y))
+        feasibility_flag = False
+
+    return feasibility_flag

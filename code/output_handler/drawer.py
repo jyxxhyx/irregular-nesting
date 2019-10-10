@@ -24,7 +24,10 @@ def draw_simple_polygon(input_polygon):
     face_colors = ('None', 'skyblue')
     edge_colors = ('aqua', 'b')
 
-    p = PatchCollection(patches, facecolors=face_colors, edgecolors=edge_colors, alpha=0.4)
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        alpha=0.4)
     ax.add_collection(p)
 
     x_min = min(p[0] for p in input_polygon)
@@ -54,7 +57,10 @@ def draw_offset_shape(shape: Shape):
     face_colors = ('None', 'skyblue')
     edge_colors = ('aqua', 'b')
 
-    p = PatchCollection(patches, facecolors=face_colors, edgecolors=edge_colors, alpha=0.4)
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        alpha=0.4)
     ax.add_collection(p)
 
     x_min = min(p[0] for p in shape.offset_polygon)
@@ -67,7 +73,8 @@ def draw_offset_shape(shape: Shape):
     plt.show()
 
 
-def draw_two_shapes_nfp(shape1: Shape, shape2: Shape, nfp: List[Tuple[float, float]]):
+def draw_two_shapes_nfp(shape1: Shape, shape2: Shape,
+                        nfp: List[Tuple[float, float]]):
     """
     画两个多边形和对应的nfp
     Parameters
@@ -96,16 +103,24 @@ def draw_two_shapes_nfp(shape1: Shape, shape2: Shape, nfp: List[Tuple[float, flo
     face_colors = ('None', 'skyblue', 'None', 'skyblue', 'none')
     edge_colors = ('aqua', 'b', 'aqua', 'b', 'lime')
 
-    p = PatchCollection(patches, facecolors=face_colors, edgecolors=edge_colors, linewidths=2, alpha=0.4)
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        linewidths=2,
+                        alpha=0.4)
     ax.add_collection(p)
 
-    x_min = min(min(p[0] for p in shape1.offset_polygon), min(p[0] for p in shape2.offset_polygon),
+    x_min = min(min(p[0] for p in shape1.offset_polygon),
+                min(p[0] for p in shape2.offset_polygon),
                 min(p[0] for p in nfp))
-    x_max = max(max(p[0] for p in shape1.offset_polygon), max(p[0] for p in shape2.offset_polygon),
+    x_max = max(max(p[0] for p in shape1.offset_polygon),
+                max(p[0] for p in shape2.offset_polygon),
                 max(p[0] for p in nfp))
-    y_min = min(min(p[1] for p in shape1.offset_polygon), min(p[1] for p in shape2.offset_polygon),
+    y_min = min(min(p[1] for p in shape1.offset_polygon),
+                min(p[1] for p in shape2.offset_polygon),
                 min(p[1] for p in nfp))
-    y_max = max(max(p[1] for p in shape1.offset_polygon), max(p[1] for p in shape2.offset_polygon),
+    y_max = max(max(p[1] for p in shape1.offset_polygon),
+                max(p[1] for p in shape2.offset_polygon),
                 max(p[1] for p in nfp))
     plt.xlim([x_min, x_max])
     plt.ylim([y_min, y_max])
@@ -114,8 +129,8 @@ def draw_two_shapes_nfp(shape1: Shape, shape2: Shape, nfp: List[Tuple[float, flo
     return
 
 
-def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polygon, out_iter,
-                   inner_iter, add_str, batch_id):
+def draw_iteration(problem, ifp, nfp, base_subject, current_polygons,
+                   next_polygon, out_iter, inner_iter, add_str, batch_id):
     """
     画一次算法迭代中的状态，用于debug
     pyclipper很多操作返回的是三维数据，需要加判断。
@@ -194,7 +209,11 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polyg
     line_widths.append(1)
     patches.append(polygon)
 
-    p = PatchCollection(patches, facecolors=face_colors, edgecolors=edge_colors, linewidths=line_widths, alpha=0.4)
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        linewidths=line_widths,
+                        alpha=0.4)
     ax.add_collection(p)
 
     ax.set_xlim([-500, problem.material.height])
@@ -204,10 +223,16 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons, next_polyg
     fig.tight_layout()
 
     plt.show()
-    fig.savefig(os.path.join(os.pardir, 'figure', 'iter',
-                             '{}_construct_{}_{}_{}.pdf'.format(batch_id, out_iter, inner_iter, add_str)))
-    fig.savefig(os.path.join(os.pardir, 'figure', 'iter',
-                             '{}_construct_{}_{}_{}.png'.format(batch_id, out_iter, inner_iter, add_str)))
+    fig.savefig(
+        os.path.join(
+            os.pardir, 'figure', 'iter',
+            '{}_construct_{}_{}_{}.pdf'.format(batch_id, out_iter, inner_iter,
+                                               add_str)))
+    fig.savefig(
+        os.path.join(
+            os.pardir, 'figure', 'iter',
+            '{}_construct_{}_{}_{}.png'.format(batch_id, out_iter, inner_iter,
+                                               add_str)))
     return
 
 
@@ -231,15 +256,31 @@ def draw_result(problem: Problem, objective, positions, file_name):
     face_colors = []
     edge_colors = []
     # 画边框
-    polygon = Polygon(problem.material.get_polygon(width))
-    face_colors.append('none')
-    edge_colors.append('purple')
-    patches.append(polygon)
+    material_polygon = problem.material.get_polygon(width)
+    if isinstance(material_polygon[0][0], numbers.Number):
+        polygon = Polygon(material_polygon)
+        face_colors.append('none')
+        edge_colors.append('purple')
+        patches.append(polygon)
+    else:
+        for each_material_polygon in material_polygon:
+            polygon = Polygon(each_material_polygon)
+            face_colors.append('none')
+            edge_colors.append('purple')
+            patches.append(polygon)
     # 画边际线
-    polygon = Polygon(problem.material.get_margin_polygon(width))
-    face_colors.append('none')
-    edge_colors.append('red')
-    patches.append(polygon)
+    margin_polygon = problem.material.get_margin_polygon(width)
+    if isinstance(margin_polygon[0][0], numbers.Number):
+        polygon = Polygon(margin_polygon)
+        face_colors.append('none')
+        edge_colors.append('red')
+        patches.append(polygon)
+    else:
+        for each_margin_polygon in margin_polygon:
+            polygon = Polygon(each_margin_polygon)
+            face_colors.append('none')
+            edge_colors.append('red')
+            patches.append(polygon)
     # 画形状
     for i, shape in enumerate(problem.shapes):
         position = positions[i]
@@ -249,7 +290,11 @@ def draw_result(problem: Problem, objective, positions, file_name):
         edge_colors.append('skyblue')
         patches.append(polygon)
 
-    p = PatchCollection(patches, facecolors=face_colors, edgecolors=edge_colors, linewidths=1, alpha=0.4)
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        linewidths=1,
+                        alpha=0.4)
     ax.add_collection(p)
 
     # ax.axis('equal')

@@ -1,0 +1,44 @@
+# logging的配置文件名
+logging_config: 'logging.yaml'
+
+# 数据集文件夹（可以是多个文件夹）
+folders: ['DatasetB']
+# 面料输入文件关键字
+material_str: 'mianliao'
+# 零件输入文件关键字
+shape_str: 'lingjian'
+# 昵称（输出文件时用到）
+nick_name: 'jiangyincaijiao1'
+
+# 缩放系数
+scale: 10
+# 额外间隔距离
+extra_offset: 2
+# 圆形瑕疵近似多边形边数
+polygon_vertices: 100
+
+# 左底变种方法中，目标函数x轴初始权重
+initial_weight: 1
+# 左底变种方法中，目标函数x轴单次迭代增加权重
+increment_weight: 0.1
+
+# 是否为debug模式（是的话会输出单步迭代图片）
+is_debug: false
+
+# PyClipper相关系数
+clipper:
+  meter_limit: 2
+  arc_tolerance: 0.25
+  precision: 1.01
+
+# 输入文件夹
+input_folder: 'data'
+# 输出文件夹
+output_folder: 'submit'
+# 图片输出文件夹
+figure_folder: 'figure'
+
+# 结果压缩包文件名
+zip_file: 'submit.zip'
+# nfps计算结果存储文件名后缀
+nfps_json: 'nfps.json'

@@ -10,7 +10,7 @@ class Solution:
     def __init__(self, sequence, positions=None, objective=None):
         self.sequences = sequence
         if positions is None:
-            self.positions = list()
+            self.positions = dict()
         else:
             self.positions = positions
         if objective is None:
@@ -19,8 +19,8 @@ class Solution:
             self.objective = objective
         return
 
-    def generate_positions(self, problem: Problem, nfps):
-        self.positions = positition.bottom_left_heuristic(problem, self.sequences, nfps)
+    def generate_positions(self, problem: Problem, nfps, config):
+        self.positions = positition.bottom_left_heuristic(problem, self.sequences, nfps, config)
         return
 
     def generate_objective(self, problem: Problem):
