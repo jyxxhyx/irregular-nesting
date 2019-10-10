@@ -8,7 +8,7 @@ from geometry.nfp_generator import generate_nfp, generate_nfp_pool
 from domain.problem import Problem
 
 from collections import deque
-from itertools import combinations
+from itertools import combinations, product
 from copy import deepcopy, copy
 from typing import Union
 import logging
@@ -31,9 +31,9 @@ class TabuSearch(BaseAlg):
     def solve(self):
         # initial_sequence = polygon_area_descending(self.problem)
         # initial_sequence = offset_polygon_area_descending(self.problem)
-        initial_sequence = rectangular_residual_area_descending(self.problem)
-        # initial_sequence = rectangular_area_descending(self.problem)
-        # initial_sequence = diagonal_descending(self.problem)
+        # initial_sequence = rectangular_residual_area_descending(self.problem)
+        initial_sequence = rectangular_area_descending(self.problem)
+        # initial_sequence = rectangular_diagonal_descending(self.problem)
         # initial_sequence = sampling_based_on_offset_polygon_area_square(self.problem)
         self.current_solution = Solution(initial_sequence)
         self.current_solution.generate_positions(self.problem, self.nfps,
@@ -61,8 +61,8 @@ class TabuSearch(BaseAlg):
     def initialize_nfps(self, input_folder, config, batch_id):
         logger = logging.getLogger(__name__)
 
-        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}'.format(
-            batch_id, config['scale'], config['extra-offset'],
+        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+            batch_id, config['scale'], config['extra_offset'],
             config['polygon_vertices'], config['clipper']['meter_limit'],
             config['clipper']['arc_tolerance'], config['clipper']['precision'],
             config['nfps_json'])
@@ -76,24 +76,18 @@ class TabuSearch(BaseAlg):
         else:
             logger.info(
                 'NFPs json file does not exist. Start to calculate NFPs.')
+            for index, (hole, shape) in enumerate(product(self.problem.material.holes, self.problem.shapes)):
+                self._calculate_one_nfp(index, hole, shape)
+            start_index = len(self.problem.shapes) * 2
             for index, (shape1, shape2) in enumerate(
                     combinations(self.problem.shapes, 2)):
-                if index % 100 == 99:
-                    logger.info('{} nfps calculated.'.format(index + 1))
-                single_nfp = generate_nfp(shape1.offset_polygon,
-                                          shape2.offset_polygon,
-                                          self.config['clipper'])
-                # p1相对于p2的nfp取负即为p2相对于p1的nfp
-                self.nfps[shape1.shape_id + shape2.shape_id] = single_nfp
-                self.nfps[shape2.shape_id +
-                          shape1.shape_id] = [[[-point[0], -point[1]]
-                                               for point in single_polygon]
-                                              for single_polygon in single_nfp]
+                self._calculate_one_nfp(start_index + index, shape1, shape2)
             with open(nfps_full_name, 'w') as json_file:
                 ujson.dump(self.nfps, json_file)
                 logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
+    # TODO To be updated.
     def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
         # 最好不要超过cpu数
 
@@ -119,3 +113,18 @@ class TabuSearch(BaseAlg):
         p.terminate()
 
         return
+
+    def _calculate_one_nfp(self, index, shape1, shape2):
+        logger = logging.getLogger(__name__)
+        if index % 100 == 0:
+            logger.info('{} nfps calculated.'.format(index))
+        single_nfp = generate_nfp(shape1.offset_polygon,
+                                  shape2.offset_polygon,
+                                  self.config['clipper'])
+        # p1相对于p2的nfp取负即为p2相对于p1的nfp
+        self.nfps[shape1.shape_id + shape2.shape_id] = single_nfp
+        self.nfps[shape2.shape_id +
+                  shape1.shape_id] = [[[-point[0], -point[1]]
+                                       for point in single_polygon]
+                                      for single_polygon in single_nfp]
+

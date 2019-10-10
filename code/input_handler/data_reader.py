@@ -72,11 +72,11 @@ def read_material_from_csv(file_name, scale=1):
         if row_material[2]:
             holes = list()
             contents_holes = ast.literal_eval(row_material[2])
-            for each_hole in contents_holes:
+            for index, each_hole in enumerate(contents_holes):
                 coordinates = [
                     each_hole[0][0] * scale, each_hole[0][1] * scale
                 ]
-                hole = Hole(coordinates, each_hole[1] * scale)
+                hole = Hole('hole{}'.format(index), coordinates, each_hole[1] * scale)
                 holes.append(hole)
         spacing = int(row_material[3]) * scale
         margin = int(row_material[4]) * scale

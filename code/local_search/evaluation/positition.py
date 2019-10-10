@@ -26,8 +26,10 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
     ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
     # 由于瑕疵的存在，第一个零件不能直接放在左下角位置
     for hole in material.holes:
-        nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
-                                config['clipper'])
+        # nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
+        #                         config['clipper'])
+        nfp_hole = _get_nfp(shape, hole, nfps,
+                            Position(0, 0), config['clipper'])
         ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
 
     _, min_idx, min_idx1 = min(
@@ -52,8 +54,10 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
         ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
 
         for hole in material.holes:
-            nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
-                                    config['clipper'])
+            # nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
+            #                         config['clipper'])
+            nfp_hole = _get_nfp(shape, hole,
+                                nfps, Position(0, 0), config['clipper'])
             ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
 
         for inner_iter, polygon in enumerate(positioned_polygons):
