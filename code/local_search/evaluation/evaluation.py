@@ -16,20 +16,13 @@ def calculate_objective(problem: Problem, positions):
     return max_x - min_x
 
 
-def check_feasibility_offset():
-    # TODO Apply multiple Point-in-polygon tests
-
-    # Step 1. Update offset polygon with high precision
-
-    # Step 2. Perform a huge number of pip tests
-
-    return
-
-
 def check_feasibility_distance(solution, problem: Problem, scale):
     logger = logging.getLogger(__name__)
     logger.info('Start to check the result.')
-    feasibility_flag = True
+
+    feasibility_flag = _check_boundary(solution, problem)
+
+    # 检查零件间的距离
     for (index1, shape1), (index2,
                            shape2) in combinations(enumerate(problem.shapes),
                                                    2):
@@ -57,3 +50,32 @@ def check_feasibility_distance(solution, problem: Problem, scale):
     else:
         logger.info('Feasibility check failed.')
     return
+
+
+def _check_boundary(solution, problem: Problem):
+    logger = logging.getLogger(__name__)
+    feasibility_flag = True
+    # 检查边框边界
+    max_x = max(solution.positions[i].x + problem.shapes[i].max_x
+                for i in range(len(solution.positions)))
+    min_x = min(solution.positions[i].x + problem.shapes[i].min_x
+                for i in range(len(solution.positions)))
+    max_y = max(solution.positions[i].y + problem.shapes[i].max_y
+                for i in range(len(solution.positions)))
+    min_y = min(solution.positions[i].y + problem.shapes[i].min_y
+                for i in range(len(solution.positions)))
+
+    material = problem.material
+    material_max_x = material.width - material.margin
+    material_min_x = material.margin
+    material_max_y = material.height - material.margin
+    material_min_y = material.margin
+
+    if max_x > material_max_x or max_y > material_max_y or min_x < material_min_x or min_y < material_min_y:
+        logger.error('Positions of polygons: {}-{}, {}-{}'.format(
+            min_x, max_x, min_y, max_y))
+        logger.error('Margin of material: {}-{}, {}-{}'.format(
+            material_min_x, material_max_x, material_min_y, material_max_y))
+        feasibility_flag = False
+
+    return feasibility_flag

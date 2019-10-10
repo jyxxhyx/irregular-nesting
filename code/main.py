@@ -93,7 +93,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
 def _construct_instance(material_file, shape_file, scale, config):
     material = data_reader.read_material_from_csv(material_file, scale)
 
-    # TODO 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
+    # 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + config['extra_offset']
 
     # 计算瑕疵的近似正多边形
