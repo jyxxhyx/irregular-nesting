@@ -16,16 +16,6 @@ def calculate_objective(problem: Problem, positions):
     return max_x - min_x
 
 
-def check_feasibility_offset():
-    # TODO Apply multiple Point-in-polygon tests
-
-    # Step 1. Update offset polygon with high precision
-
-    # Step 2. Perform a huge number of pip tests
-
-    return
-
-
 def check_feasibility_distance(solution, problem: Problem, scale):
     logger = logging.getLogger(__name__)
     logger.info('Start to check the result.')

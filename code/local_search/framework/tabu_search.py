@@ -95,7 +95,7 @@ class TabuSearch(BaseAlg):
         return
 
     def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
-        # todo 最好不要超过cpu数
+        # 最好不要超过cpu数
 
         logger = logging.getLogger(__name__)
         p = Pool(processes=number_processes)

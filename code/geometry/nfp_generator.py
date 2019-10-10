@@ -109,7 +109,7 @@ def diff_ifp_nfps(ifp, nfp):
         #
         # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
-        # TODO 只去除NFP并集中的孔洞，允许形状为非凸
+        # 只去除NFP并集中的孔洞，允许形状为非凸
         union_polygon_without_holes = [
             each_union_nfp for each_union_nfp in union_nfp
             if pyclipper.Orientation(each_union_nfp)
