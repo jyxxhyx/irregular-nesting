@@ -54,8 +54,8 @@ def generate_ifp(material: Material, shape: Shape, spacing):
     -------
 
     """
-    min_x = material.margin - shape.min_x - spacing
-    min_y = material.margin - shape.min_y - spacing
+    min_x = material.margin - shape.min_x
+    min_y = material.margin - shape.min_y
     max_x = material.width - material.margin - (shape.max_x - shape.min_x)
     max_y = material.height - material.margin - (shape.max_y - shape.min_y)
     return [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]

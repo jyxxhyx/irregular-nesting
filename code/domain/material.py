@@ -3,10 +3,11 @@ import math
 
 
 class Hole:
-    def __init__(self, center, radius):
+    def __init__(self, hole_id, center, radius):
+        self.shape_id = hole_id
         self.center = center
         self.radius = radius
-        self.regular_polygon = list()
+        self.offset_polygon = list()
         return
 
     def approximate_regular_polygon(self, number_vertices: int, spacing: int):
@@ -29,7 +30,7 @@ class Hole:
         angle = math.pi * 2 / number_vertices
         regular_polygon_radius = self.radius / math.cos(angle) + spacing
         for i in range(number_vertices):
-            self.regular_polygon.append([
+            self.offset_polygon.append([
                 self.center[0] + regular_polygon_radius * math.cos(i * angle),
                 self.center[1] + regular_polygon_radius * math.sin(i * angle)
             ])
@@ -89,7 +90,7 @@ class Material:
             whole_polygon.append(outer_polygon)
             # TODO 此函数是画图用的，可以考虑返回圆形
             for hole in self.holes:
-                whole_polygon.append(hole.regular_polygon)
+                whole_polygon.append(hole.offset_polygon)
             return whole_polygon
 
     def get_margin_polygon(self, width):
