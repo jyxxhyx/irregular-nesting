@@ -78,7 +78,7 @@ class TabuSearch(BaseAlg):
                 'NFPs json file does not exist. Start to calculate NFPs.')
             for index, (hole, shape) in enumerate(product(self.problem.material.holes, self.problem.shapes)):
                 self._calculate_one_nfp(index, hole, shape)
-            start_index = len(self.problem.shapes) * 2
+            start_index = len(self.problem.shapes) * len(self.problem.material.holes)
             for index, (shape1, shape2) in enumerate(
                     combinations(self.problem.shapes, 2)):
                 self._calculate_one_nfp(start_index + index, shape1, shape2)

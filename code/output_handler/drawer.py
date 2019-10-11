@@ -40,12 +40,13 @@ def draw_simple_polygon(input_polygon):
     plt.show()
 
 
-def draw_offset_shape(shape: Shape):
+def draw_offset_shape(shape: Shape, text=None):
     """
     画一个形状和他对应的外延多边形
     Parameters
     ----------
     shape
+    text
     """
     fig, ax = plt.subplots()
     patches = []
@@ -69,6 +70,8 @@ def draw_offset_shape(shape: Shape):
     y_max = max(p[1] for p in shape.offset_polygon)
     plt.xlim([x_min, x_max])
     plt.ylim([y_min, y_max])
+
+    plt.text((x_min + x_max) / 2, y_min + 10, text)
 
     plt.show()
 

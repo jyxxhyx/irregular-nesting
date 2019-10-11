@@ -68,7 +68,7 @@ def read_material_from_csv(file_name, scale=1):
         area = row_material[1].split('*')
         width = int(area[0]) * scale
         height = int(area[1]) * scale
-        holes = None
+        holes = list()
         if row_material[2]:
             holes = list()
             contents_holes = ast.literal_eval(row_material[2])
