@@ -32,12 +32,19 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
                             Position(0, 0), config['clipper'])
         ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
 
-    _, min_idx, min_idx1 = min(
-        (weight * v[0] + v[1], i, j)
-        for j, ifp_single_polygon in enumerate(ifp_polygon)
-        for i, v in enumerate(ifp_single_polygon))
-    positions[sequence[0]] = Position(ifp_polygon[min_idx1][min_idx][0],
-                                      ifp_polygon[min_idx1][min_idx][1])
+    if material.holes:
+        _, min_idx, min_idx1 = min(
+            (weight * v[0] + v[1], i, j)
+            for j, ifp_single_polygon in enumerate(ifp_polygon)
+            for i, v in enumerate(ifp_single_polygon))
+        positions[sequence[0]] = Position(ifp_polygon[min_idx1][min_idx][0],
+                                          ifp_polygon[min_idx1][min_idx][1])
+    else:
+        _, min_idx = min(
+            (weight * v[0] + v[1], j)
+            for j, v in enumerate(ifp_polygon))
+        positions[sequence[0]] = Position(ifp_polygon[min_idx][0],
+                                          ifp_polygon[min_idx][1])
 
     positioned_polygon = shape.generate_positioned_offset_polygon(
         positions[sequence[0]])
