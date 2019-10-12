@@ -41,7 +41,7 @@ def generate_nfp_pool(info):
     return result, shape1_str, shape2_str
 
 
-def generate_ifp(material: Material, shape: Shape, spacing):
+def generate_ifp(material: Material, shape: Shape):
     """
     生成布料内部的可行区域。
 
@@ -49,7 +49,6 @@ def generate_ifp(material: Material, shape: Shape, spacing):
     ----------
     material
     shape
-    spacing
 
     Returns
     -------
