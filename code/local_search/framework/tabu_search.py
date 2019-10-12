@@ -87,31 +87,54 @@ class TabuSearch(BaseAlg):
                 logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
-    # TODO To be updated.
-    def initialize_nfps_pool(self, number_processes: int = os.cpu_count() - 1):
+    def initialize_nfps_pool(self, input_folder, config, batch_id, number_processes: int = os.cpu_count() - 1):
         # 最好不要超过cpu数
-
         logger = logging.getLogger(__name__)
-        p = Pool(processes=number_processes)
-        logger.info('Prepare the input.')
 
-        input_list = [{
-            'polygon1': shape1.offset_polygon,
-            'polygon2': shape2.offset_polygon,
-            'shape1_str': shape1.shape_id,
-            'shape2_str': shape2.shape_id
-        } for shape1, shape2 in combinations(self.problem.shapes, 2)]
-        logger.info('Start to map.')
-        result = p.map(generate_nfp_pool, input_list)
-        for single_nfp, shape1_str, shape2_str in result:
-            self.nfps[shape1_str, shape2_str] = single_nfp
-            self.nfps[shape2_str, shape1_str] = [[[
-                -point[0], -point[1]
-            ] for point in single_polygon] for single_polygon in single_nfp]
-        p.close()
-        p.join()
-        p.terminate()
+        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+            batch_id, config['scale'], config['extra_offset'],
+            config['polygon_vertices'], config['clipper']['meter_limit'],
+            config['clipper']['arc_tolerance'], config['clipper']['precision'],
+            config['nfps_json'])
 
+        nfps_full_name = os.path.join(os.pardir, config['output_folder'],
+                                      input_folder, nfps_file_name)
+        if os.path.isfile(nfps_full_name):
+            logger.info('NFPs json file exists.')
+            with open(nfps_full_name, 'r') as json_file:
+                self.nfps = ujson.load(json_file)
+        else:
+            logger.info(
+                'NFPs json file does not exist. Start to calculate NFPs.')
+            p = Pool(processes=number_processes)
+            logger.info('Prepare the input.')
+
+            iterator = list()
+            iterator.extend(product(self.problem.material.holes, self.problem.shapes))
+            iterator.extend(combinations(self.problem.shapes, 2))
+
+            input_list = [{
+                'polygon1': shape1.offset_polygon,
+                'polygon2': shape2.offset_polygon,
+                'shape1_str': shape1.shape_id,
+                'shape2_str': shape2.shape_id,
+                'precision': config['clipper']['precision']
+            } for shape1, shape2 in iterator]
+            logger.info('Start to map.')
+            result = p.map(generate_nfp_pool, input_list)
+            for single_nfp, shape1_str, shape2_str in result:
+                self.nfps[shape1_str + shape2_str] = single_nfp
+                self.nfps[shape2_str + shape1_str] = [[[
+                    -point[0], -point[1]
+                ] for point in single_polygon] for single_polygon in single_nfp]
+            p.close()
+            p.join()
+            p.terminate()
+            logger.info('Multiprocessing finished.')
+
+            with open(nfps_full_name, 'w') as json_file:
+                ujson.dump(self.nfps, json_file)
+                logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
     def _calculate_one_nfp(self, index, shape1, shape2):

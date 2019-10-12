@@ -30,13 +30,14 @@ def generate_nfp_pool(info):
     polygon2 = info['polygon2']
     shape1_str = info['shape1_str']
     shape2_str = info['shape2_str']
+    precision = info['precision']
 
     logger = logging.getLogger(__name__)
     result = pyclipper.CleanPolygons(
         pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1,
-                                                           polygon2)), 1.20)
+                                                           polygon2)), precision)
     result = _clean_empty_element_nested_list(result)
-    logger.info('{}-{}'.format(shape1_str, shape2_str))
+    # logger.info('{}-{}'.format(shape1_str, shape2_str))
     return result, shape1_str, shape2_str
 
 
