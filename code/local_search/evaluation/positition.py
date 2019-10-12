@@ -32,8 +32,8 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
         for hole in material.holes:
             # nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
             #                         config['clipper'])
-            nfp_hole = _get_nfp(shape, hole,
-                                nfps, Position(0, 0), config['clipper'])
+            nfp_hole = _get_nfp(shape, hole, nfps, Position(0, 0),
+                                config['clipper'])
             ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
 
         for inner_iter, polygon in enumerate(positioned_polygons):
@@ -61,19 +61,14 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
         weight += config['increment_weight']
         # 每次选择一个x轴方向、y轴方向加权最小的点放置形状。
         # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
-        if outer_iter == 0 and len(material.holes) == 0:
-            _, min_idx = min(
-                    (weight * v[0] + v[1], j)
-                    for j, v in enumerate(ifp_polygon))
-            positions[sequence[0]] = Position(ifp_polygon[min_idx][0], ifp_polygon[min_idx][1])
-        else:
-            _, min_idx, min_idx1 = min(
-                (weight * v[0] + v[1], i, j)
-                for j, ifp_single_polygon in enumerate(ifp_polygon)
-                for i, v in enumerate(ifp_single_polygon))
 
-            positions[idx] = Position(ifp_polygon[min_idx1][min_idx][0],
-                                      ifp_polygon[min_idx1][min_idx][1])
+        _, min_idx, min_idx1 = min(
+            (weight * v[0] + v[1], i, j)
+            for j, ifp_single_polygon in enumerate(ifp_polygon)
+            for i, v in enumerate(ifp_single_polygon))
+
+        positions[idx] = Position(ifp_polygon[min_idx1][min_idx][0],
+                                  ifp_polygon[min_idx1][min_idx][1])
 
         positioned_polygon = shape.generate_positioned_offset_polygon(
             positions[idx])

@@ -8,6 +8,7 @@ class Hole:
         self.center = center
         self.radius = radius
         self.offset_polygon = list()
+        self.offset_vertices = 0
         return
 
     def approximate_regular_polygon(self, number_vertices: int, spacing: int):
@@ -28,6 +29,7 @@ class Hole:
 
         """
         angle = math.pi * 2 / number_vertices
+        self.offset_vertices = number_vertices
         regular_polygon_radius = self.radius / math.cos(angle) + spacing
         for i in range(number_vertices):
             self.offset_polygon.append([
@@ -35,6 +37,19 @@ class Hole:
                 self.center[1] + regular_polygon_radius * math.sin(i * angle)
             ])
         return
+
+    def scaled_polygon(self, scale):
+        polygon = list()
+        angle = math.pi * 2 / self.offset_vertices
+        regular_polygon_radius = self.radius / math.cos(angle) / scale
+        for i in range(self.offset_vertices):
+            polygon.append([
+                self.center[0] / scale +
+                regular_polygon_radius * math.cos(i * angle),
+                self.center[1] / scale +
+                regular_polygon_radius * math.sin(i * angle)
+            ])
+        return polygon
 
 
 class Material:

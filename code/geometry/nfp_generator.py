@@ -58,7 +58,7 @@ def generate_ifp(material: Material, shape: Shape):
     min_y = material.margin - shape.min_y
     max_x = material.width - material.margin - (shape.max_x - shape.min_x)
     max_y = material.height - material.margin - (shape.max_y - shape.min_y)
-    return [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
+    return [[[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]]
 
 
 def intersect_polygons(polygon1, polygon2):
@@ -100,14 +100,6 @@ def diff_ifp_nfps(ifp, nfp):
 
         union_nfp = pc_temp.Execute(pyclipper.CT_UNION, pyclipper.PFT_EVENODD,
                                     pyclipper.PFT_EVENODD)
-        # 此处保守起见，取了NFP并集的凸包
-        # temp_union_nfp = union_nfp[0]
-        # for i in range(1, len(union_nfp)):
-        #     temp_union_nfp += union_nfp[i]
-        # convex_polygon = MultiPoint(temp_union_nfp).convex_hull
-        # convex_polygon = [[int(node[0]), int(node[1])] for node in list(convex_polygon.exterior.coords)]
-        #
-        # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
         # 只去除NFP并集中的孔洞，允许形状为非凸
         union_polygon_without_holes = [
