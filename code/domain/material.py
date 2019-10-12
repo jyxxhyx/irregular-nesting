@@ -9,6 +9,7 @@ class Hole:
         self.radius = radius
         self.offset_polygon = list()
         self.offset_vertices = 0
+        self.similar_shape = self
         return
 
     def approximate_regular_polygon(self, number_vertices: int, spacing: int):

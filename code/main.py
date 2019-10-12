@@ -1,11 +1,12 @@
 from domain import problem
-from geometry import nfp_generator
+from geometry import nfp_generator, similarity
 from input_handler import data_reader, env
 from local_search.framework.tabu_search import TabuSearch
 from local_search.domain.solution import Solution
 from local_search.evaluation.evaluation import check_feasibility_distance
 from output_handler import drawer, writer
 
+from itertools import combinations
 import logging
 import logging.config
 import math
@@ -71,10 +72,14 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
     instance, batch = _construct_instance(material_file, shape_file, scale,
                                           config)
 
+    similar_shapes = similarity.get_similar_polygons(
+        instance, config['hausdorff_threshold'])
+
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance, config)
-    tabu_search.initialize_nfps(input_folder, config, batch)
-    # tabu_search.initialize_nfps_pool()
+    # tabu_search.initialize_nfps(input_folder, config, batch)
+    tabu_search.initialize_nfps_pool(input_folder, config, batch,
+                                     similar_shapes)
     tabu_search.solve()
 
     # 获得结果，输出
@@ -95,11 +100,13 @@ def _construct_instance(material_file, shape_file, scale, config):
 
     # 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + config['extra_offset']
+    hole_offset_spacing = math.ceil(
+        material.spacing / 2) + config['extra_hole_offset']
 
     # 计算瑕疵的近似正多边形
     for hole in material.holes:
         hole.approximate_regular_polygon(config['polygon_vertices'],
-                                         offset_spacing)
+                                         hole_offset_spacing)
 
     shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing,
                                                   config, scale)

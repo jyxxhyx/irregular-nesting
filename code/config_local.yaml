@@ -19,6 +19,9 @@ extra_hole_offset: 0.1
 # 圆形瑕疵近似多边形边数
 polygon_vertices: 100
 
+# hausdorff距离阈值
+hausdorff_threshold: 20
+
 # 左底变种方法中，目标函数x轴初始权重
 initial_weight: 1
 # 左底变种方法中，目标函数x轴单次迭代增加权重
