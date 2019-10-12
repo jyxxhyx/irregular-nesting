@@ -30,17 +30,18 @@ def generate_nfp_pool(info):
     polygon2 = info['polygon2']
     shape1_str = info['shape1_str']
     shape2_str = info['shape2_str']
+    precision = info['precision']
 
     logger = logging.getLogger(__name__)
     result = pyclipper.CleanPolygons(
         pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1,
-                                                           polygon2)), 1.20)
+                                                           polygon2)), precision)
     result = _clean_empty_element_nested_list(result)
-    logger.info('{}-{}'.format(shape1_str, shape2_str))
+    # logger.info('{}-{}'.format(shape1_str, shape2_str))
     return result, shape1_str, shape2_str
 
 
-def generate_ifp(material: Material, shape: Shape, spacing):
+def generate_ifp(material: Material, shape: Shape):
     """
     生成布料内部的可行区域。
 
@@ -48,17 +49,16 @@ def generate_ifp(material: Material, shape: Shape, spacing):
     ----------
     material
     shape
-    spacing
 
     Returns
     -------
 
     """
-    min_x = material.margin - shape.min_x - spacing
-    min_y = material.margin - shape.min_y - spacing
+    min_x = material.margin - shape.min_x
+    min_y = material.margin - shape.min_y
     max_x = material.width - material.margin - (shape.max_x - shape.min_x)
     max_y = material.height - material.margin - (shape.max_y - shape.min_y)
-    return [[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]
+    return [[[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]]
 
 
 def intersect_polygons(polygon1, polygon2):
@@ -100,14 +100,6 @@ def diff_ifp_nfps(ifp, nfp):
 
         union_nfp = pc_temp.Execute(pyclipper.CT_UNION, pyclipper.PFT_EVENODD,
                                     pyclipper.PFT_EVENODD)
-        # 此处保守起见，取了NFP并集的凸包
-        # temp_union_nfp = union_nfp[0]
-        # for i in range(1, len(union_nfp)):
-        #     temp_union_nfp += union_nfp[i]
-        # convex_polygon = MultiPoint(temp_union_nfp).convex_hull
-        # convex_polygon = [[int(node[0]), int(node[1])] for node in list(convex_polygon.exterior.coords)]
-        #
-        # pc.AddPath(convex_polygon, pyclipper.PT_CLIP, True)
 
         # 只去除NFP并集中的孔洞，允许形状为非凸
         union_polygon_without_holes = [

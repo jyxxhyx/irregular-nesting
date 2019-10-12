@@ -9,7 +9,6 @@ import logging
 
 def bottom_left_heuristic(problem: Problem, sequence, nfps,
                           config) -> Dict[int, Position]:
-    # TODO Step 0 和后续Step的计算逻辑合并
     logger = logging.getLogger(__name__)
     material = problem.material
     positions = dict()
@@ -22,38 +21,19 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
 
     weight = config['initial_weight']
 
-    shape = problem.shapes[sequence[0]]
-    ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
-    # 由于瑕疵的存在，第一个零件不能直接放在左下角位置
-    for hole in material.holes:
-        nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
-                                config['clipper'])
-        ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
-
-    _, min_idx, min_idx1 = min(
-        (weight * v[0] + v[1], i, j)
-        for j, ifp_single_polygon in enumerate(ifp_polygon)
-        for i, v in enumerate(ifp_single_polygon))
-    positions[sequence[0]] = Position(ifp_polygon[min_idx1][min_idx][0],
-                                      ifp_polygon[min_idx1][min_idx][1])
-
-    positioned_polygon = shape.generate_positioned_offset_polygon(
-        positions[sequence[0]])
-    base_subject = diff_ifp_nfps(base_subject, positioned_polygon)
-    positioned_polygons.append(positioned_polygon)
-    positioned_polygon_indices.append(sequence[0])
-
-    for outer_iter, idx in enumerate(sequence[1:]):
+    for outer_iter, idx in enumerate(sequence):
         if outer_iter % 10 == 9:
             logger.info('{} shapes positioned.'.format(outer_iter + 1))
 
         shape = problem.shapes[idx]
         # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
-        ifp_polygon = generate_ifp(material, shape, problem.offset_spacing)
+        ifp_polygon = generate_ifp(material, shape)
 
         for hole in material.holes:
-            nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
-                                    config['clipper'])
+            # nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
+            #                         config['clipper'])
+            nfp_hole = _get_nfp(shape, hole, nfps, Position(0, 0),
+                                config['clipper'])
             ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
 
         for inner_iter, polygon in enumerate(positioned_polygons):
@@ -81,6 +61,7 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
         weight += config['increment_weight']
         # 每次选择一个x轴方向、y轴方向加权最小的点放置形状。
         # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
+
         _, min_idx, min_idx1 = min(
             (weight * v[0] + v[1], i, j)
             for j, ifp_single_polygon in enumerate(ifp_polygon)
