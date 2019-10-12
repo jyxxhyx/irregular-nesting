@@ -61,12 +61,7 @@ class TabuSearch(BaseAlg):
     def initialize_nfps(self, input_folder, config, batch_id):
         logger = logging.getLogger(__name__)
 
-        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            batch_id, config['scale'], config['extra_offset'],
-            config['polygon_vertices'], config['clipper']['meter_limit'],
-            config['clipper']['arc_tolerance'], config['clipper']['precision'],
-            config['nfps_json'])
-
+        nfps_file_name = self._get_json_file_name(config, batch_id)
         nfps_full_name = os.path.join(os.pardir, config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
@@ -76,9 +71,11 @@ class TabuSearch(BaseAlg):
         else:
             logger.info(
                 'NFPs json file does not exist. Start to calculate NFPs.')
-            for index, (hole, shape) in enumerate(product(self.problem.material.holes, self.problem.shapes)):
+            for index, (hole, shape) in enumerate(
+                    product(self.problem.material.holes, self.problem.shapes)):
                 self._calculate_one_nfp(index, hole, shape)
-            start_index = len(self.problem.shapes) * len(self.problem.material.holes)
+            start_index = len(self.problem.shapes) * len(
+                self.problem.material.holes)
             for index, (shape1, shape2) in enumerate(
                     combinations(self.problem.shapes, 2)):
                 self._calculate_one_nfp(start_index + index, shape1, shape2)
@@ -87,16 +84,15 @@ class TabuSearch(BaseAlg):
                 logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
-    def initialize_nfps_pool(self, input_folder, config, batch_id, number_processes: int = os.cpu_count() - 1):
+    def initialize_nfps_pool(self,
+                             input_folder,
+                             config,
+                             batch_id,
+                             number_processes: int = os.cpu_count() - 1):
         # 最好不要超过cpu数
         logger = logging.getLogger(__name__)
 
-        nfps_file_name = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            batch_id, config['scale'], config['extra_offset'],
-            config['polygon_vertices'], config['clipper']['meter_limit'],
-            config['clipper']['arc_tolerance'], config['clipper']['precision'],
-            config['nfps_json'])
-
+        nfps_file_name = self._get_json_file_name(config, batch_id)
         nfps_full_name = os.path.join(os.pardir, config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
@@ -110,7 +106,8 @@ class TabuSearch(BaseAlg):
             logger.info('Prepare the input.')
 
             iterator = list()
-            iterator.extend(product(self.problem.material.holes, self.problem.shapes))
+            iterator.extend(
+                product(self.problem.material.holes, self.problem.shapes))
             iterator.extend(combinations(self.problem.shapes, 2))
 
             input_list = [{
@@ -124,9 +121,10 @@ class TabuSearch(BaseAlg):
             result = p.map(generate_nfp_pool, input_list)
             for single_nfp, shape1_str, shape2_str in result:
                 self.nfps[shape1_str + shape2_str] = single_nfp
-                self.nfps[shape2_str + shape1_str] = [[[
-                    -point[0], -point[1]
-                ] for point in single_polygon] for single_polygon in single_nfp]
+                self.nfps[shape2_str +
+                          shape1_str] = [[[-point[0], -point[1]]
+                                          for point in single_polygon]
+                                         for single_polygon in single_nfp]
             p.close()
             p.join()
             p.terminate()
@@ -141,8 +139,7 @@ class TabuSearch(BaseAlg):
         logger = logging.getLogger(__name__)
         if index % 100 == 0:
             logger.info('{} nfps calculated.'.format(index))
-        single_nfp = generate_nfp(shape1.offset_polygon,
-                                  shape2.offset_polygon,
+        single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon,
                                   self.config['clipper'])
         # p1相对于p2的nfp取负即为p2相对于p1的nfp
         self.nfps[shape1.shape_id + shape2.shape_id] = single_nfp
@@ -151,3 +148,11 @@ class TabuSearch(BaseAlg):
                                        for point in single_polygon]
                                       for single_polygon in single_nfp]
 
+    @staticmethod
+    def _get_json_file_name(config, batch_id):
+        return '{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
+            batch_id, config['scale'], config['extra_offset'],
+            config['extra_hole_offset'], config['polygon_vertices'],
+            config['clipper']['meter_limit'],
+            config['clipper']['arc_tolerance'], config['clipper']['precision'],
+            config['nfps_json'])
