@@ -11,7 +11,7 @@ shape_str: 'lingjian'
 nick_name: 'jiangyincaijiao1'
 
 # 缩放系数
-scale: 10
+scale: 20
 # 额外间隔距离
 extra_offset: 2
 # 瑕疵的额外间隔距离
@@ -32,9 +32,9 @@ is_debug: false
 
 # PyClipper相关系数
 clipper:
-  meter_limit: 1.5
+  meter_limit: 2
   arc_tolerance: 0.25
-  precision: 1.01
+  precision: 1.25
 
 # 输入文件夹
 input_folder: 'data'

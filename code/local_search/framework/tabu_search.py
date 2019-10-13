@@ -8,7 +8,7 @@ from geometry.nfp_generator import generate_nfp, generate_nfp_pool
 from domain.problem import Problem
 
 from collections import deque
-from itertools import combinations, product
+from itertools import combinations_with_replacement, product
 from copy import deepcopy, copy
 from typing import Union
 import logging
@@ -76,8 +76,8 @@ class TabuSearch(BaseAlg):
                 self._calculate_one_nfp(index, hole, shape)
             start_index = len(similar_shapes) * len(
                 self.problem.material.holes)
-            for index, (shape1, shape2) in enumerate(
-                    combinations(similar_shapes, 2)):
+            for index, (shape1,
+                        shape2) in enumerate(combinations_with_replacement(similar_shapes, 2)):
                 self._calculate_one_nfp(start_index + index, shape1, shape2)
             with open(nfps_full_name, 'w') as json_file:
                 ujson.dump(self.nfps, json_file)
@@ -109,7 +109,7 @@ class TabuSearch(BaseAlg):
             iterator = list()
             iterator.extend(
                 product(self.problem.material.holes, similar_shapes))
-            iterator.extend(combinations(similar_shapes, 2))
+            iterator.extend(combinations_with_replacement(similar_shapes, 2))
 
             input_list = [{
                 'polygon1': shape1.offset_polygon,
@@ -151,9 +151,9 @@ class TabuSearch(BaseAlg):
 
     @staticmethod
     def _get_json_file_name(config, batch_id):
-        return '{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
+        return '{}_{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
             batch_id, config['scale'], config['extra_offset'],
             config['extra_hole_offset'], config['polygon_vertices'],
-            config['clipper']['meter_limit'],
+            config['hausdorff_threshold'], config['clipper']['meter_limit'],
             config['clipper']['arc_tolerance'], config['clipper']['precision'],
             config['nfps_json'])

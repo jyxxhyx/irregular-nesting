@@ -14,16 +14,13 @@ def get_similar_polygons(instance: Problem, threshold):
             distance = calculate_similarity(shape1, shape2)
             if distance <= threshold:
                 # TODO 如果改成并行计算，需要全部算完之后再重新刷一遍
-                shape2.similar_shape = shape1
+                shape2.similar_shape = shape1.similar_shape
                 logger.info(
                     'Hausdorff distance of shapes {} and {}: {}'.format(
                         shape1.shape_id, shape2.shape_id, distance))
                 break
     logger.info(distance_function_list.cache_info())
-    similar_offset_shapes = {
-        shape.similar_shape
-        for shape in instance.shapes
-    }
+    similar_offset_shapes = {shape.similar_shape for shape in instance.shapes}
     logger.info('Size of origin shapes: {}. Size of unique shapes: {}.'.format(
         len(instance.shapes), len(similar_offset_shapes)))
     return similar_offset_shapes

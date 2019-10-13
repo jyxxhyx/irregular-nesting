@@ -69,30 +69,36 @@ def _check_holes(solution, problem: Problem, scale):
 
     min_distance = sys.maxsize
 
-    for (index1, hole), (index2,
-                         shape) in product(enumerate(problem.material.holes),
-                                           enumerate(problem.shapes)):
+    if problem.material.holes:
+        for (index1,
+             hole), (index2,
+                     shape) in product(enumerate(problem.material.holes),
+                                       enumerate(problem.shapes)):
 
-        pos = solution.positions[index2]
-        shape_polygon = shape.generate_positioned_polygon_output(pos, scale)
+            pos = solution.positions[index2]
+            shape_polygon = shape.generate_positioned_polygon_output(
+                pos, scale)
 
-        shapely_hole = Polygon(hole.scaled_polygon(scale))
+            shapely_hole = Polygon(hole.scaled_polygon(scale))
 
-        for point in shape_polygon:
-            shapely_point = Point(point)
-            temp_distance = shapely_hole.exterior.distance(shapely_point)
-            if temp_distance * scale < problem.material.spacing:
-                feasibility_flag = False
-                logger.error(
-                    'Shapes {} and {} are too close to each other'.format(
-                        hole.shape_id, shape.shape_id))
-                logger.error(
-                    'Point {} to shape {}\'s distance is {:.3f}'.format(
-                        point, hole.shape_id, temp_distance))
-            if min_distance > temp_distance:
-                min_distance = temp_distance
-    logger.info('Minimum distance between shapes and holes is {:.3f}.'.format(
-        min_distance))
+            for point in shape_polygon:
+                shapely_point = Point(point)
+                temp_distance = shapely_hole.exterior.distance(shapely_point)
+                if temp_distance * scale < problem.material.spacing:
+                    feasibility_flag = False
+                    logger.error(
+                        'Shapes {} and {} are too close to each other'.format(
+                            hole.shape_id, shape.shape_id))
+                    logger.error(
+                        'Point {} to shape {}\'s distance is {:.3f}'.format(
+                            point, hole.shape_id, temp_distance))
+                if min_distance > temp_distance:
+                    min_distance = temp_distance
+        logger.info(
+            'Minimum distance between shapes and holes is {:.3f}.'.format(
+                min_distance))
+    else:
+        logger.info('No holes. Skip the check.')
     return feasibility_flag
 
 
