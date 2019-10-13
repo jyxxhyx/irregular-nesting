@@ -34,6 +34,7 @@ class Shape:
         self.area = self.calculate_origin_area()
         self._calculate_extreme_values()
         self._normalize()
+        self.similar_shape = self
         return
 
     def generate_offset_rectangular(self, offset):
@@ -147,6 +148,9 @@ class Shape:
         self.min_x = 0
         self.min_y = 0
         return
+
+    def __hash__(self):
+        return self.shape_id.__hash__()
 
 
 if __name__ == '__main__':

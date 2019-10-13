@@ -94,10 +94,11 @@ def _get_nfp(next_shape: Shape, positioned_shape: Shape, nfps: dict,
     -------
 
     """
-    if (next_shape.shape_id + positioned_shape.shape_id) not in nfps:
-        nfps[next_shape.shape_id + positioned_shape.shape_id] = generate_nfp(
-            next_shape.offset_polygon, positioned_shape.offset_polygon,
-            config_clipper)
+    shape_id1 = next_shape.similar_shape.shape_id
+    shape_id2 = positioned_shape.similar_shape.shape_id
+    if (shape_id1 + shape_id2) not in nfps:
+        nfps[shape_id1 + shape_id2] = generate_nfp(
+            next_shape.similar_shape.offset_polygon,
+            positioned_shape.similar_shape.offset_polygon, config_clipper)
     return [[[position.x + node[0], position.y + node[1]] for node in each_nfp]
-            for each_nfp in nfps[next_shape.shape_id +
-                                 positioned_shape.shape_id]]
+            for each_nfp in nfps[shape_id1 + shape_id2]]
