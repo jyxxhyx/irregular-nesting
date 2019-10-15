@@ -2,12 +2,11 @@ from domain.problem import Position, Problem
 from local_search.evaluation import positition, evaluation
 
 import sys
+from typing import Dict, Tuple
 
 
 class Solution:
-    positions: Position
-
-    def __init__(self, sequence, positions=None, objective=None):
+    def __init__(self, sequence, positions: Dict[str, Tuple[str, Position]] = None, objective=None):
         self.sequences = sequence
         if positions is None:
             self.positions = dict()

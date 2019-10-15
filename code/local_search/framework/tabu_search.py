@@ -1,7 +1,6 @@
 from local_search.framework.base_alg import BaseAlg
 from local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
-    rectangular_area_descending, rectangular_diagonal_descending, sampling_based_on_offset_polygon_area_square, \
-    rectangular_residual_area_descending
+    rectangular_area_descending, rectangular_diagonal_descending, rectangular_residual_area_descending
 from local_search.improvement.perturb import single_shuffle
 from local_search.domain.solution import Solution
 from geometry.nfp_generator import generate_nfp, generate_nfp_pool
@@ -34,7 +33,6 @@ class TabuSearch(BaseAlg):
         # initial_sequence = rectangular_residual_area_descending(self.problem)
         initial_sequence = rectangular_area_descending(self.problem)
         # initial_sequence = rectangular_diagonal_descending(self.problem)
-        # initial_sequence = sampling_based_on_offset_polygon_area_square(self.problem)
         self.current_solution = Solution(initial_sequence)
         self.current_solution.generate_positions(self.problem, self.nfps,
                                                  self.config)
@@ -76,8 +74,8 @@ class TabuSearch(BaseAlg):
                 self._calculate_one_nfp(index, hole, shape)
             start_index = len(similar_shapes) * len(
                 self.problem.material.holes)
-            for index, (shape1,
-                        shape2) in enumerate(combinations_with_replacement(similar_shapes, 2)):
+            for index, (shape1, shape2) in enumerate(
+                    combinations_with_replacement(similar_shapes, 2)):
                 self._calculate_one_nfp(start_index + index, shape1, shape2)
             with open(nfps_full_name, 'w') as json_file:
                 ujson.dump(self.nfps, json_file)
@@ -114,8 +112,8 @@ class TabuSearch(BaseAlg):
             input_list = [{
                 'polygon1': shape1.offset_polygon,
                 'polygon2': shape2.offset_polygon,
-                'shape1_str': shape1.shape_id,
-                'shape2_str': shape2.shape_id,
+                'shape1_str': str(shape1),
+                'shape2_str': str(shape2),
                 'precision': config['clipper']['precision']
             } for shape1, shape2 in iterator]
             logger.info('Start to map.')
@@ -143,11 +141,11 @@ class TabuSearch(BaseAlg):
         single_nfp = generate_nfp(shape1.offset_polygon, shape2.offset_polygon,
                                   self.config['clipper'])
         # p1相对于p2的nfp取负即为p2相对于p1的nfp
-        self.nfps[shape1.shape_id + shape2.shape_id] = single_nfp
-        self.nfps[shape2.shape_id +
-                  shape1.shape_id] = [[[-point[0], -point[1]]
-                                       for point in single_polygon]
-                                      for single_polygon in single_nfp]
+        self.nfps[str(shape1) + str(shape2)] = single_nfp
+        self.nfps[str(shape2) +
+                  str(shape1)] = [[[-point[0], -point[1]]
+                                   for point in single_polygon]
+                                  for single_polygon in single_nfp]
 
     @staticmethod
     def _get_json_file_name(config, batch_id):

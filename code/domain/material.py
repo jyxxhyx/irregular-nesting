@@ -52,6 +52,9 @@ class Hole:
             ])
         return polygon
 
+    def __repr__(self):
+        return self.shape_id
+
 
 class Material:
     def __init__(self,

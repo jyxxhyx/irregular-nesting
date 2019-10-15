@@ -3,17 +3,18 @@ from geometry.nfp_generator import generate_nfp, generate_ifp, diff_ifp_nfps, in
 from output_handler import drawer
 
 import datetime
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import logging
+import sys
 
 
-def bottom_left_heuristic(problem: Problem, sequence, nfps,
-                          config) -> Dict[int, Position]:
+def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
+                          config) -> Dict[str, Tuple[str, Position]]:
     logger = logging.getLogger(__name__)
     material = problem.material
     positions = dict()
 
-    positioned_polygons = list()
+    positioned_polygons = dict()
     positioned_polygon_indices = list()
 
     # TODO ifp计算逻辑简化后，可以不纪录base_subject，目前debug需要，先保留
@@ -21,60 +22,72 @@ def bottom_left_heuristic(problem: Problem, sequence, nfps,
 
     weight = config['initial_weight']
 
-    for outer_iter, idx in enumerate(sequence):
+    for outer_iter, key in enumerate(sequence):
         if outer_iter % 10 == 9:
             logger.info('{} shapes positioned.'.format(outer_iter + 1))
 
-        shape = problem.shapes[idx]
-        # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
-        ifp_polygon = generate_ifp(material, shape)
+        candidate_shapes = problem.shapes[key]
 
-        for hole in material.holes:
-            # nfp_hole = generate_nfp(shape.offset_polygon, hole.regular_polygon,
-            #                         config['clipper'])
-            nfp_hole = _get_nfp(shape, hole, nfps, Position(0, 0),
-                                config['clipper'])
-            ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
+        min_value = sys.maxsize
+        min_rotation = -1
+        min_position = Position(0, 0)
 
-        for inner_iter, polygon in enumerate(positioned_polygons):
-            # nfp_polygon = generate_nfp(shape.offset_polygon, polygon)
-            positioned_shape = problem.shapes[
-                positioned_polygon_indices[inner_iter]]
-            position = positions[positioned_polygon_indices[inner_iter]]
-            nfp_polygon = _get_nfp(shape, positioned_shape, nfps, position,
-                                   config['clipper'])
-            if config['is_debug']:
-                drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
-                                      base_subject, positioned_polygons,
-                                      shape.offset_polygon, outer_iter,
-                                      inner_iter, 'a',
-                                      problem.shapes[0].batch_id)
-            ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_polygon)
-            if config['is_debug']:
-                drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
-                                      base_subject, positioned_polygons,
-                                      shape.offset_polygon, outer_iter,
-                                      inner_iter, 'b',
-                                      problem.shapes[0].batch_id)
+        # Find the minimum rotation
+        for rotation, shape in candidate_shapes.items():
+            # ifp_polygon = intersect_polygons(generate_ifp(material, shape, problem.offset_spacing), base_subject)
+            ifp_polygon = generate_ifp(material, shape)
+
+            for hole in material.holes:
+
+                nfp_hole = _get_nfp(shape, hole, nfps, Position(0, 0),
+                                    config['clipper'])
+                ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
+
+            for (previous_key,
+                 previous_rotation), polygon in positioned_polygons.items():
+
+                positioned_shape = problem.shapes[previous_key][rotation]
+                position = positions[previous_key][1]
+                nfp_polygon = _get_nfp(shape, positioned_shape, nfps, position,
+                                       config['clipper'])
+                if config['is_debug']:
+                    drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
+                                          base_subject, positioned_polygons,
+                                          shape.offset_polygon, outer_iter,
+                                          (previous_key, previous_rotation),
+                                          'a', problem.shapes[0].batch_id)
+                ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_polygon)
+                if config['is_debug']:
+                    drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
+                                          base_subject, positioned_polygons,
+                                          shape.offset_polygon, outer_iter,
+                                          (previous_key, previous_rotation),
+                                          'b', problem.shapes[0].batch_id)
+
+            # 每次选择一个x轴方向、y轴方向加权最小的点放置形状。
+            # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
+
+            value, min_idx, min_idx1 = min(
+                (weight * v[0] + v[1], i, j)
+                for j, ifp_single_polygon in enumerate(ifp_polygon)
+                for i, v in enumerate(ifp_single_polygon))
+
+            if min_value > value:
+                min_value = value
+                min_rotation = rotation
+                min_position = Position(ifp_polygon[min_idx1][min_idx][0],
+                                        ifp_polygon[min_idx1][min_idx][1])
+
+        positions[key] = (min_rotation, min_position)
+
+        positioned_polygon = candidate_shapes[
+            min_rotation].generate_positioned_offset_polygon(positions[key][1])
+        base_subject = diff_ifp_nfps(base_subject, positioned_polygon)
+        positioned_polygons[(key, min_rotation)] = positioned_polygon
+        positioned_polygon_indices.append((key, min_rotation))
 
         # x轴方向权重会不断增加
         weight += config['increment_weight']
-        # 每次选择一个x轴方向、y轴方向加权最小的点放置形状。
-        # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
-
-        _, min_idx, min_idx1 = min(
-            (weight * v[0] + v[1], i, j)
-            for j, ifp_single_polygon in enumerate(ifp_polygon)
-            for i, v in enumerate(ifp_single_polygon))
-
-        positions[idx] = Position(ifp_polygon[min_idx1][min_idx][0],
-                                  ifp_polygon[min_idx1][min_idx][1])
-
-        positioned_polygon = shape.generate_positioned_offset_polygon(
-            positions[idx])
-        base_subject = diff_ifp_nfps(base_subject, positioned_polygon)
-        positioned_polygons.append(positioned_polygon)
-        positioned_polygon_indices.append(idx)
 
     return positions
 
@@ -94,9 +107,11 @@ def _get_nfp(next_shape: Shape, positioned_shape: Shape, nfps: dict,
     -------
 
     """
-    shape_id1 = next_shape.similar_shape.shape_id
-    shape_id2 = positioned_shape.similar_shape.shape_id
+    logger = logging.getLogger(__name__)
+    shape_id1 = str(next_shape.similar_shape)
+    shape_id2 = str(positioned_shape.similar_shape)
     if (shape_id1 + shape_id2) not in nfps:
+        logger.warning('NFP {}-{} not found. Calculate online'.format(shape_id1, shape_id2))
         nfps[shape_id1 + shape_id2] = generate_nfp(
             next_shape.similar_shape.offset_polygon,
             positioned_shape.similar_shape.offset_polygon, config_clipper)

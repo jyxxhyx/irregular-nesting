@@ -10,8 +10,8 @@ Position = namedtuple('pos', ['x', 'y'])
 
 
 class Shape:
-    def __init__(self, shape_id, count, polygon, rotations, batch_id,
-                 material_id):
+    def __init__(self, shape_id, count, polygon, batch_id,
+                 material_id, rotate_degree):
         """
 
         Parameters
@@ -19,17 +19,16 @@ class Shape:
         shape_id
         count
         polygon：外轮廓坐标，需要逆时针方向提供
-        rotations
+        rotate_degree
         batch_id
         material_id
         """
         self.shape_id = shape_id
         self.count = count
         self.polygon = polygon
-        self.rotations = rotations
         self.batch_id = batch_id
         self.material_id = material_id
-        self.is_rotated = len(rotations) == 1
+        self.rotate_degree = rotate_degree
         self.offset_polygon = list()
         self.area = self.calculate_origin_area()
         self._calculate_extreme_values()
@@ -150,7 +149,10 @@ class Shape:
         return
 
     def __hash__(self):
-        return self.shape_id.__hash__()
+        return self.__repr__().__hash__()
+
+    def __repr__(self):
+        return '{}_{}'.format(self.shape_id, self.rotate_degree)
 
 
 if __name__ == '__main__':
