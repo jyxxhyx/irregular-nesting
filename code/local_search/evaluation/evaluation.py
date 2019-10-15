@@ -1,19 +1,19 @@
-from domain.problem import Problem
+from domain.problem import Problem, Position
 
 import logging
 from itertools import combinations, product
 from shapely.geometry import Polygon, Point
 import sys
+from typing import Dict, Tuple
 
 
-def calculate_objective(problem: Problem, positions):
+def calculate_objective(problem: Problem,
+                        positions: Dict[str, Tuple[str, Position]]):
     assert len(positions) == len(problem.shapes)
-    max_x = max(positions[i].x + problem.shapes[i].max_x
-                for i in range(len(positions)))
-    min_x = min(positions[i].x + problem.shapes[i].min_x
-                for i in range(len(positions)))
-    # max_y = max(positions[i].y + problem.shapes[i].max_y for i in range(len(positions)))
-    # min_y = min(positions[i].y + problem.shapes[i].min_y for i in range(len(positions)))
+    max_x = max(position.x + problem.shapes[key][inner_key].max_x
+                for key, (inner_key, position) in positions.items())
+    min_x = min(position.x + problem.shapes[key][inner_key].min_x
+                for key, (inner_key, position) in positions.items())
     return max_x - min_x
 
 
@@ -38,14 +38,14 @@ def _check_boundary(solution, problem: Problem):
     logger = logging.getLogger(__name__)
     feasibility_flag = True
     # 检查边框边界
-    max_x = max(solution.positions[i].x + problem.shapes[i].max_x
-                for i in range(len(solution.positions)))
-    min_x = min(solution.positions[i].x + problem.shapes[i].min_x
-                for i in range(len(solution.positions)))
-    max_y = max(solution.positions[i].y + problem.shapes[i].max_y
-                for i in range(len(solution.positions)))
-    min_y = min(solution.positions[i].y + problem.shapes[i].min_y
-                for i in range(len(solution.positions)))
+    max_x = max(position.x + problem.shapes[key][inner_key].max_x
+                for key, (inner_key, position) in solution.positions.items())
+    min_x = min(position.x + problem.shapes[key][inner_key].min_x
+                for key, (inner_key, position) in solution.positions.items())
+    max_y = max(position.y + problem.shapes[key][inner_key].max_y
+                for key, (inner_key, position) in solution.positions.items())
+    min_y = min(position.y + problem.shapes[key][inner_key].min_y
+                for key, (inner_key, position) in solution.positions.items())
 
     material = problem.material
     material_max_x = material.width - material.margin
@@ -69,13 +69,15 @@ def _check_holes(solution, problem: Problem, scale):
 
     min_distance = sys.maxsize
 
-    if problem.material.holes:
-        for (index1,
-             hole), (index2,
-                     shape) in product(enumerate(problem.material.holes),
-                                       enumerate(problem.shapes)):
+    positioned_shapes = [
+        problem.shapes[key][inner_key]
+        for key, (inner_key, position) in solution.positions.items()
+    ]
 
-            pos = solution.positions[index2]
+    if problem.material.holes:
+        for hole, shape in product(problem.material.holes, positioned_shapes):
+
+            pos = solution.positions[shape.shape_id][1]
             shape_polygon = shape.generate_positioned_polygon_output(
                 pos, scale)
 
@@ -88,7 +90,7 @@ def _check_holes(solution, problem: Problem, scale):
                     feasibility_flag = False
                     logger.error(
                         'Shapes {} and {} are too close to each other'.format(
-                            hole.shape_id, shape.shape_id))
+                            hole.shape_id, str(shape)))
                     logger.error(
                         'Point {} to shape {}\'s distance is {:.3f}'.format(
                             point, hole.shape_id, temp_distance))
@@ -108,12 +110,15 @@ def _check_shapes(solution, problem: Problem, scale):
     feasibility_flag = True
     min_distance = sys.maxsize
 
+    positioned_shapes = [
+        problem.shapes[key][inner_key]
+        for key, (inner_key, position) in solution.positions.items()
+    ]
+
     # 检查零件间的距离
-    for (index1, shape1), (index2,
-                           shape2) in combinations(enumerate(problem.shapes),
-                                                   2):
-        pos1 = solution.positions[index1]
-        pos2 = solution.positions[index2]
+    for shape1, shape2 in combinations(positioned_shapes, 2):
+        pos1 = solution.positions[shape1.shape_id][1]
+        pos2 = solution.positions[shape2.shape_id][1]
 
         polygon1 = shape1.generate_positioned_polygon_output(pos1, scale)
         polygon2 = shape2.generate_positioned_polygon_output(pos2, scale)
@@ -127,10 +132,10 @@ def _check_shapes(solution, problem: Problem, scale):
                 feasibility_flag = False
                 logger.error(
                     'Shapes {} and {} are too close to each other'.format(
-                        shape1.shape_id, shape2.shape_id))
+                        str(shape1), str(shape2)))
                 logger.error(
                     'Point {} to shape {}\'s distance is {:.3f}'.format(
-                        point, shape2.shape_id, temp_distance))
+                        point, str(shape2), temp_distance))
             if min_distance > temp_distance:
                 min_distance = temp_distance
 

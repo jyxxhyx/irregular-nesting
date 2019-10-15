@@ -285,8 +285,8 @@ def draw_result(problem: Problem, objective, positions, file_name):
             edge_colors.append('red')
             patches.append(polygon)
     # 画形状
-    for i, shape in enumerate(problem.shapes):
-        position = positions[i]
+    for key, (rotation, position) in positions.items():
+        shape = problem.shapes[key][rotation]
         outline = shape.generate_positioned_polygon_output(position)
         polygon = Polygon(outline)
         face_colors.append('aqua')

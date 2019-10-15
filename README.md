@@ -22,7 +22,7 @@
 
 ### 计算环境
 
-程序用`python3.6`实现，运行于MacBook Pro，处理器为2.3 GHz Intel Core i5，内存为8 GB 2133 MHz LPDDR3。
+程序用`python3.7`实现，运行于MacBook Pro，处理器为2.3 GHz Intel Core i5，内存为8 GB 2133 MHz LPDDR3。
 
 ### 求解结果
 
@@ -37,7 +37,7 @@
 - [x] NFP计算结果存储，方便以后local search时候调用
   - [x] NFP结果与问题批次、clipper参数、offset、scale参数相关，结果命名中需要区分。
 - [ ] local search部分tabu search方法实现
-- [ ] 零件旋转相关的处理（坐标变化，NFP计算）
+- [x] 零件旋转相关的处理（坐标变化，NFP计算）
 - [x] 复赛中面料上圆形瑕疵的处理
 - [x] 结果校验函数
 - [x] 零件相似性判断

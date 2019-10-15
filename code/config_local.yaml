@@ -11,16 +11,16 @@ shape_str: 'lingjian'
 nick_name: 'jiangyincaijiao1'
 
 # 缩放系数
-scale: 20
+scale: 10
 # 额外间隔距离
 extra_offset: 2
 # 瑕疵的额外间隔距离
-extra_hole_offset: 0.1
+extra_hole_offset: 0.2
 # 圆形瑕疵近似多边形边数
 polygon_vertices: 100
 
 # hausdorff距离阈值
-hausdorff_threshold: 20
+hausdorff_threshold: 1
 
 # 左底变种方法中，目标函数x轴初始权重
 initial_weight: 1
@@ -34,7 +34,7 @@ is_debug: false
 clipper:
   meter_limit: 2
   arc_tolerance: 0.25
-  precision: 1.25
+  precision: 1.01
 
 # 输入文件夹
 input_folder: 'data'
