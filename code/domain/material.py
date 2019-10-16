@@ -107,7 +107,7 @@ class Material:
         else:
             whole_polygon = list()
             whole_polygon.append(outer_polygon)
-            # TODO 此函数是画图用的，可以考虑返回圆形
+
             for hole in self.holes:
                 whole_polygon.append(hole.offset_polygon)
             return whole_polygon

@@ -1,5 +1,5 @@
 from domain.problem import Position, Problem
-from local_search.evaluation import positition, evaluation
+from local_search.evaluation import position, evaluation
 
 import sys
 from typing import Dict, Tuple
@@ -19,7 +19,7 @@ class Solution:
         return
 
     def generate_positions(self, problem: Problem, nfps, config):
-        self.positions = positition.bottom_left_heuristic(problem, self.sequences, nfps, config)
+        self.positions = position.bottom_left_heuristic(problem, self.sequences, nfps, config)
         return
 
     def generate_objective(self, problem: Problem):
