@@ -18,7 +18,8 @@ def read_shapes_from_csv(file_name,
                          spacing,
                          config,
                          scale: int = 1,
-                         max_shape_len: int = sys.maxsize) -> Tuple[Dict[str, Dict[int, Shape]], str]:
+                         max_shape_len: int = sys.maxsize
+                         ) -> Tuple[Dict[str, Dict[int, Shape]], str]:
     shape_dict: OrderedDict[str, Dict[int, Shape]] = OrderedDict()
     with open(file_name, encoding='utf-8') as csv_file:
         contents = csv.reader(csv_file)
@@ -35,40 +36,16 @@ def read_shapes_from_csv(file_name,
             shape_rotations: Tuple[int] = ast.literal_eval(row[4])
             material_id: str = row[5]
             shape_dict[shape_id] = dict()
-            # 保证所有多边形的坐标都是逆时针方向的
+
             if 0 in shape_rotations:
-                if not pyclipper.Orientation(shape_polygon):
-                    shape = Shape(shape_id, shape_num,
-                                  list(reversed(shape_polygon)),
-                                  batch_id, material_id, rotate_degree=0)
-                else:
-                    shape = Shape(shape_id, shape_num, shape_polygon,
-                                  batch_id, material_id, rotate_degree=0)
-
-                shape.generate_offset_polygon(
-                    spacing,
-                    meter_limit=config['clipper']['meter_limit'],
-                    arc_tolerance=config['clipper']['arc_tolerance'],
-                    precision=config['clipper']['precision'])
-
-                shape_dict[shape_id][0] = shape
+                shape_dict[shape_id][0] = _construct_shape(
+                    shape_id, shape_num, shape_polygon, batch_id, material_id,
+                    spacing, config, 0)
 
             if 180 in shape_rotations:
-                if not pyclipper.Orientation(shape_polygon):
-                    shape = Shape(shape_id, shape_num,
-                                  rotate_180(list(reversed(shape_polygon))),
-                                  batch_id, material_id, rotate_degree=180)
-                else:
-                    shape = Shape(shape_id, shape_num, rotate_180(shape_polygon),
-                                  batch_id, material_id, rotate_degree=180)
-
-                shape.generate_offset_polygon(
-                    spacing,
-                    meter_limit=config['clipper']['meter_limit'],
-                    arc_tolerance=config['clipper']['arc_tolerance'],
-                    precision=config['clipper']['precision'])
-
-                shape_dict[shape_id][180] = shape
+                shape_dict[shape_id][180] = _construct_shape(
+                    shape_id, shape_num, rotate_180(shape_polygon), batch_id,
+                    material_id, spacing, config, 180)
 
             # 设置读取数量上限（debug时候会用到）
             if len(shape_dict) > max_shape_len:
@@ -92,9 +69,37 @@ def read_material_from_csv(file_name, scale=1):
                 coordinates = [
                     each_hole[0][0] * scale, each_hole[0][1] * scale
                 ]
-                hole = Hole('hole{}'.format(index), coordinates, each_hole[1] * scale)
+                hole = Hole('hole{}'.format(index), coordinates,
+                            each_hole[1] * scale)
                 holes.append(hole)
         spacing = int(row_material[3]) * scale
         margin = int(row_material[4]) * scale
         material = Material(material_id, height, width, spacing, margin, holes)
     return material
+
+
+def _construct_shape(shape_id, shape_num, shape_polygon, batch_id, material_id,
+                     spacing, config, rotate_degree) -> Shape:
+    # 保证所有多边形的坐标都是逆时针方向的
+    if not pyclipper.Orientation(shape_polygon):
+        shape = Shape(shape_id,
+                      shape_num,
+                      list(reversed(shape_polygon)),
+                      batch_id,
+                      material_id,
+                      rotate_degree=rotate_degree)
+    else:
+        shape = Shape(shape_id,
+                      shape_num,
+                      shape_polygon,
+                      batch_id,
+                      material_id,
+                      rotate_degree=rotate_degree)
+
+    shape.generate_offset_polygon(
+        spacing,
+        meter_limit=config['clipper']['meter_limit'],
+        arc_tolerance=config['clipper']['arc_tolerance'],
+        precision=config['clipper']['precision'])
+
+    return shape
