@@ -140,6 +140,12 @@ class Shape:
         return
 
     def _normalize(self):
+        """
+        调整坐标，使得polygon的min_x和min_y为0，reference point在坐标原点
+        Returns
+        -------
+
+        """
         self.polygon = [[p[0] - self.min_x, p[1] - self.min_y]
                         for p in self.polygon]
         self.max_x -= self.min_x
@@ -153,11 +159,3 @@ class Shape:
 
     def __repr__(self):
         return '{}_{}'.format(self.shape_id, self.rotate_degree)
-
-
-if __name__ == '__main__':
-    test_polygon = [[0, 0], [0, 100], [100, 100], [100, 0], [50, 50]]
-    shape = Shape(1, 1, test_polygon, [0], 1, 1)
-    shape.generate_offset_polygon(2.5)
-    pprint(shape.offset_polygon)
-    print(shape.area)

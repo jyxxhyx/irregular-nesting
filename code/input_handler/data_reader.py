@@ -27,13 +27,10 @@ def read_shapes_from_csv(file_name,
             batch_id: str = row[0]
             shape_id: str = row[1]
             shape_num: int = int(row[2])
-            # Nested list version
+
             shape_polygon: List[List[float]] = ast.literal_eval(row[3])
             shape_polygon = [[node[0] * scale, node[1] * scale]
                              for node in shape_polygon]
-            # Numpy version
-            # shape_polygon = numpy.array(ast.literal_eval(row[3])) * scale
-            # shape_polygon = [[node[0] * scale, node[1] * scale] for node in shape_polygon]
 
             shape_rotations: Tuple[int] = ast.literal_eval(row[4])
             material_id: str = row[5]
@@ -53,29 +50,25 @@ def read_shapes_from_csv(file_name,
                     meter_limit=config['clipper']['meter_limit'],
                     arc_tolerance=config['clipper']['arc_tolerance'],
                     precision=config['clipper']['precision'])
-                # shape.generate_convex_offset_polygon(spacing)
-                # shape.generate_offset_rectangular(spacing)
 
                 shape_dict[shape_id][0] = shape
 
-            # if 180 in shape_rotations:
-            #     if not pyclipper.Orientation(shape_polygon):
-            #         shape = Shape(shape_id, shape_num,
-            #                       rotate_180(list(reversed(shape_polygon))),
-            #                       batch_id, material_id, rotate_degree=180)
-            #     else:
-            #         shape = Shape(shape_id, shape_num, rotate_180(shape_polygon),
-            #                       batch_id, material_id, rotate_degree=180)
-            #
-            #     shape.generate_offset_polygon(
-            #         spacing,
-            #         meter_limit=config['clipper']['meter_limit'],
-            #         arc_tolerance=config['clipper']['arc_tolerance'],
-            #         precision=config['clipper']['precision'])
-            #     # shape.generate_convex_offset_polygon(spacing)
-            #     # shape.generate_offset_rectangular(spacing)
-            #
-            #     shape_dict[shape_id][180] = shape
+            if 180 in shape_rotations:
+                if not pyclipper.Orientation(shape_polygon):
+                    shape = Shape(shape_id, shape_num,
+                                  rotate_180(list(reversed(shape_polygon))),
+                                  batch_id, material_id, rotate_degree=180)
+                else:
+                    shape = Shape(shape_id, shape_num, rotate_180(shape_polygon),
+                                  batch_id, material_id, rotate_degree=180)
+
+                shape.generate_offset_polygon(
+                    spacing,
+                    meter_limit=config['clipper']['meter_limit'],
+                    arc_tolerance=config['clipper']['arc_tolerance'],
+                    precision=config['clipper']['precision'])
+
+                shape_dict[shape_id][180] = shape
 
             # 设置读取数量上限（debug时候会用到）
             if len(shape_dict) > max_shape_len:

@@ -59,7 +59,7 @@ class TabuSearch(BaseAlg):
     def initialize_nfps(self, input_folder, config, batch_id, similar_shapes):
         logger = logging.getLogger(__name__)
 
-        nfps_file_name = self._get_json_file_name(config, batch_id)
+        nfps_file_name = _get_json_file_name(config, batch_id)
         nfps_full_name = os.path.join(os.pardir, config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
@@ -91,7 +91,7 @@ class TabuSearch(BaseAlg):
         # 最好不要超过cpu数
         logger = logging.getLogger(__name__)
 
-        nfps_file_name = self._get_json_file_name(config, batch_id)
+        nfps_file_name = _get_json_file_name(config, batch_id)
         nfps_full_name = os.path.join(os.pardir, config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
@@ -147,11 +147,11 @@ class TabuSearch(BaseAlg):
                                    for point in single_polygon]
                                   for single_polygon in single_nfp]
 
-    @staticmethod
-    def _get_json_file_name(config, batch_id):
-        return '{}_{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            batch_id, config['scale'], config['extra_offset'],
-            config['extra_hole_offset'], config['polygon_vertices'],
-            config['hausdorff_threshold'], config['clipper']['meter_limit'],
-            config['clipper']['arc_tolerance'], config['clipper']['precision'],
-            config['nfps_json'])
+
+def _get_json_file_name(config, batch_id):
+    return '{}_{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
+        batch_id, config['scale'], config['extra_offset'],
+        config['extra_hole_offset'], config['polygon_vertices'],
+        config['hausdorff_threshold'], config['clipper']['meter_limit'],
+        config['clipper']['arc_tolerance'], config['clipper']['precision'],
+        config['nfps_json'])

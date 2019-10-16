@@ -312,11 +312,3 @@ def draw_result(problem: Problem, objective, positions, file_name):
     fig.savefig(file_name)
 
     return
-
-
-if __name__ == '__main__':
-    test_polygon = [[0, 0], [0, 100], [100, 100], [100, 0], [50, 50]]
-    tmp_shape = Shape(1, 1, test_polygon, [0], 1, 1)
-    tmp_shape.generate_offset_polygon(2.5)
-    draw_offset_shape(tmp_shape)
-    pprint(tmp_shape.offset_polygon)
