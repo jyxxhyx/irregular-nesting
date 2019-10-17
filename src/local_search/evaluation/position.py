@@ -1,6 +1,6 @@
-from code.domain.problem import Problem, Position, Shape
-from code.geometry.nfp_generator import generate_nfp, generate_ifp, diff_ifp_nfps, intersect_polygons
-from code.output_handler import drawer
+from src.domain.problem import Problem, Position, Shape
+from src.geometry.nfp_generator import generate_nfp, generate_ifp, diff_ifp_nfps, intersect_polygons
+from src.output_handler import drawer
 
 import datetime
 from typing import List, Dict, Tuple

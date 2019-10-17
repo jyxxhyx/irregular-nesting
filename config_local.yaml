@@ -1,8 +1,8 @@
 # logging的配置文件名
 logging_config: 'logging.yaml'
 
-# 数据集文件夹（可以是多个文件夹）
-folders: ['DatasetB']
+# 数据集关键字
+folder_keyword: 'B'
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字
@@ -38,6 +38,7 @@ clipper:
   arc_tolerance: 0.25
   precision: 1.01
 
+production_data: '/tcdata'
 # 输入文件夹
 input_folder: 'data'
 # 输出文件夹

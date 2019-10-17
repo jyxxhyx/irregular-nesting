@@ -1,16 +1,17 @@
-from code.domain import problem
-from code.geometry import nfp_generator, similarity
-from code.input_handler import data_reader, env
-from code.local_search.framework.tabu_search import TabuSearch
-from code.local_search.domain.solution import Solution
-from code.local_search.evaluation.evaluation import check_feasibility_distance
-from code.output_handler import drawer, writer
+from src.domain import problem
+from src.geometry import nfp_generator, similarity
+from src.input_handler import data_reader, env
+from src.local_search.framework.tabu_search import TabuSearch
+from src.local_search.domain.solution import Solution
+from src.local_search.evaluation.evaluation import check_feasibility_distance
+from src.output_handler import drawer, writer
 
 from itertools import combinations
 import logging
 import logging.config
 import math
 import os
+import sys
 from pprint import pprint
 from timeit import default_timer as timer
 import yaml
@@ -123,25 +124,30 @@ def _construct_instance(material_file, shape_file, scale, config):
 def _output_solution(instance, solution, objective, scale, nick_name, batch,
                      input_folder, config):
     logger = logging.getLogger(__name__)
+
     material = instance.material
     total_area = sum(candidate_shapes[0].area
                      for candidate_shapes in instance.shapes.values())
-    logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
-                                                         scale**2))
-    logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
-    logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
-                                                  1000**2 / scale**2))
     utilization = total_area / (objective * material.height)
-    logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
+    if not config['is_production']:
+        logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
+                                                             scale**2))
+        logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
+        logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
+                                                      1000**2 / scale**2))
+        logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
+
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
     file_name = os.path.join(os.getcwd(), config['output_folder'], input_folder,
                              file_name)
     writer.write_to_csv(file_name, instance, solution)
-    file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
-                             file_name)
-    drawer.draw_result(instance, solution.objective, solution.positions,
-                       file_name)
+
+    if not config['is_production']:
+        file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
+        file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
+                                 file_name)
+        drawer.draw_result(instance, solution.objective, solution.positions,
+                           file_name)
     return
 
 
@@ -179,17 +185,20 @@ def _write_zip_file(input_dir, config):
 
 
 def main(config):
-    target_folders = config['folders']
+    folder_keyword = config['folder_keyword']
     material_str = config['material_str']
     shape_str = config['shape_str']
     nick_name = config['nick_name']
     scale = config['scale']
 
-    data_dir = os.path.join(os.getcwd(), config['input_folder'])
+    if config['is_production']:
+        data_dir = config['production_data']
+    else:
+        data_dir = os.path.join(os.getcwd(), config['input_folder'])
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:
-            if input_dir in target_folders:
+            if folder_keyword in input_dir:
                 instance_dir = os.path.join(root, input_dir)
                 # 遍历各dataset下面不同算例文件
                 _check_create_result_directory(instance_dir, config)
@@ -209,6 +218,7 @@ def main(config):
 
 if __name__ == '__main__':
     main_config = env.get_configuration()
+    main_config['is_production'] = (len(sys.argv) >= 2)
     logging_path = os.path.join(os.getcwd(), main_config['logging_config'])
     setup_logging(logging_path)
     main(main_config)

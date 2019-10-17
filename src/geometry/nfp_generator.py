@@ -1,4 +1,4 @@
-from code.domain.problem import Material, Shape
+from src.domain.problem import Material, Shape
 
 import logging
 import numbers

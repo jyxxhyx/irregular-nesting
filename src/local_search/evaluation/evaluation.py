@@ -1,7 +1,9 @@
-from code.domain.problem import Problem, Position
+from src.domain.problem import Problem, Position
 
 import logging
 from itertools import combinations, product
+from multiprocessing import Pool
+import os
 from shapely.geometry import Polygon, Point
 import sys
 from typing import Dict, Tuple
@@ -24,7 +26,9 @@ def check_feasibility_distance(solution, problem: Problem, scale):
     feasibility_flag = _check_boundary(solution, problem)
     feasibility_flag = feasibility_flag and _check_holes(
         solution, problem, scale)
-    feasibility_flag = feasibility_flag and _check_shapes(
+    # feasibility_flag = feasibility_flag and _check_shapes(
+    #     solution, problem, scale)
+    feasibility_flag = feasibility_flag and _check_shapes_pool(
         solution, problem, scale)
 
     if feasibility_flag:
@@ -142,3 +146,64 @@ def _check_shapes(solution, problem: Problem, scale):
     logger.info(
         'Minimum distance among shapes is {:.3f}.'.format(min_distance))
     return feasibility_flag
+
+
+def _check_shapes_pool(solution,
+                       problem: Problem,
+                       scale,
+                       number_processes: int = os.cpu_count() - 1):
+    logger = logging.getLogger(__name__)
+
+    p = Pool(processes=number_processes)
+
+    feasibility_flag = True
+    min_distance = sys.maxsize
+
+    positioned_shapes = [
+        problem.shapes[key][inner_key]
+        for key, (inner_key, position) in solution.positions.items()
+    ]
+
+    input_list = [{
+        'polygon1':
+        shape1.generate_positioned_polygon_output(
+            solution.positions[shape1.shape_id][1], scale),
+        'polygon2':
+        shape2.generate_positioned_polygon_output(
+            solution.positions[shape2.shape_id][1], scale),
+        'shape1_str':
+        str(shape1),
+        'shape2_str':
+        str(shape2),
+    } for shape1, shape2 in combinations(positioned_shapes, 2)]
+
+    logger.info('Start to map.')
+    result = p.map(_calculate_two_polygon_distance, input_list)
+    logger.info('Multiprocessing finished.')
+
+    for distance, shape1_str, shape2_str in result:
+        if distance * scale < problem.material.spacing:
+            feasibility_flag = False
+            logger.error('Shapes {} and {} are too close to each other'.format(
+                shape1_str, shape2_str))
+        if min_distance > distance:
+            min_distance = distance
+    logger.info(
+        'Minimum distance among shapes is {:.3f}.'.format(min_distance))
+    return feasibility_flag
+
+
+def _calculate_two_polygon_distance(info):
+    polygon1 = info['polygon1']
+    polygon2 = info['polygon2']
+    shape1_str = info['shape1_str']
+    shape2_str = info['shape2_str']
+    distance = sys.maxsize
+    shapely_polygon = Polygon(polygon2)
+
+    for point in polygon1:
+        shapely_point = Point(point)
+        temp_distance = shapely_polygon.exterior.distance(shapely_point)
+        if distance > temp_distance:
+            distance = temp_distance
+    return distance, shape1_str, shape2_str
