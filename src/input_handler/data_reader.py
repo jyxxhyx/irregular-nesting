@@ -1,6 +1,6 @@
-from code.domain.problem import Shape, Material, Problem
-from code.domain.material import Hole
-from code.geometry.rotate import rotate_180
+from src.domain.problem import Shape, Material, Problem
+from src.domain.material import Hole
+from src.geometry.rotate import rotate_180
 
 import ast
 from collections import OrderedDict

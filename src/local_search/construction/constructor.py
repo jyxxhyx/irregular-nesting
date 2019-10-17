@@ -1,4 +1,4 @@
-from code.domain.problem import Problem
+from src.domain.problem import Problem
 
 from random import random
 from bisect import bisect_right

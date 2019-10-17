@@ -1,10 +1,10 @@
-from code.domain import problem
-from code.geometry import nfp_generator, similarity
-from code.input_handler import data_reader, env
-from code.local_search.framework.tabu_search import TabuSearch
-from code.local_search.domain.solution import Solution
-from code.local_search.evaluation.evaluation import check_feasibility_distance
-from code.output_handler import drawer, writer
+from src.domain import problem
+from src.geometry import nfp_generator, similarity
+from src.input_handler import data_reader, env
+from src.local_search.framework.tabu_search import TabuSearch
+from src.local_search.domain.solution import Solution
+from src.local_search.evaluation.evaluation import check_feasibility_distance
+from src.output_handler import drawer, writer
 
 from itertools import combinations
 import logging

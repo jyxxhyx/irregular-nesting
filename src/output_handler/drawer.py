@@ -1,4 +1,4 @@
-from code.domain.problem import Shape, Problem
+from src.domain.problem import Shape, Problem
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon

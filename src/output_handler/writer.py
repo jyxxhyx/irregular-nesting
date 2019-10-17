@@ -1,5 +1,5 @@
-from code.domain.problem import Shape, Problem, Material
-from code.local_search.domain.solution import Solution
+from src.domain.problem import Shape, Problem, Material
+from src.local_search.domain.solution import Solution
 
 import csv
 

@@ -1,4 +1,4 @@
-from code.domain.problem import Problem, Position
+from src.domain.problem import Problem, Position
 
 import logging
 from itertools import combinations, product

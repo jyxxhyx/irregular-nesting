@@ -1,12 +1,12 @@
-from code.local_search.framework.base_alg import BaseAlg
-from code.local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
+from src.local_search.framework.base_alg import BaseAlg
+from src.local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
     rectangular_area_descending, rectangular_diagonal_descending, rectangular_residual_area_descending
-from code.local_search.improvement.perturb import single_shuffle
-from code.local_search.domain.solution import Solution
-from code.geometry.nfp_generator import generate_nfp, generate_nfp_pool
-from code.geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
-from code.domain.problem import Problem
-from code.output_handler.drawer import draw_two_polygons
+from src.local_search.improvement.perturb import single_shuffle
+from src.local_search.domain.solution import Solution
+from src.geometry.nfp_generator import generate_nfp, generate_nfp_pool
+from src.geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
+from src.domain.problem import Problem
+from src.output_handler.drawer import draw_two_polygons
 
 from collections import deque
 from itertools import combinations_with_replacement, product, permutations
