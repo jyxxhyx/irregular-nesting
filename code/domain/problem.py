@@ -1,5 +1,5 @@
-from domain.shape import Shape, Position
-from domain.material import Material
+from code.domain.shape import Shape, Position
+from code.domain.material import Material
 
 from pprint import pprint
 from typing import List, Dict

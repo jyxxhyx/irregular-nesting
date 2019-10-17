@@ -1,5 +1,5 @@
-from domain.problem import Position, Problem
-from local_search.evaluation import position, evaluation
+from code.domain.problem import Position, Problem
+from code.local_search.evaluation import position, evaluation
 
 import sys
 from typing import Dict, Tuple
