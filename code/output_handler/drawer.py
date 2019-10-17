@@ -1,4 +1,4 @@
-from domain.problem import Shape, Problem
+from code.domain.problem import Shape, Problem
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -132,6 +132,52 @@ def draw_two_shapes_nfp(shape1: Shape, shape2: Shape,
     return
 
 
+def draw_two_polygons(polygons1, polygons2):
+    fig, ax = plt.subplots()
+    patches = []
+    face_colors = []
+    edge_colors = []
+    line_widths = []
+
+    for base_polygon in polygons1:
+        polygon = Polygon(base_polygon)
+        face_colors.append('none')
+        edge_colors.append('purple')
+        line_widths.append(1)
+        patches.append(polygon)
+
+    for base_polygon in polygons2:
+        polygon = Polygon(base_polygon)
+        face_colors.append('none')
+        edge_colors.append('red')
+        line_widths.append(1)
+        patches.append(polygon)
+
+    p = PatchCollection(patches,
+                        facecolors=face_colors,
+                        edgecolors=edge_colors,
+                        linewidths=line_widths,
+                        alpha=0.4)
+
+    x_min = min(min(p[0] for polygon in polygons1 for p in polygon),
+                min(p[0] for polygon in polygons2 for p in polygon))
+    y_min = min(min(p[1] for polygon in polygons1 for p in polygon),
+                min(p[1] for polygon in polygons2 for p in polygon))
+    x_max = max(max(p[0] for polygon in polygons1 for p in polygon),
+                max(p[0] for polygon in polygons2 for p in polygon))
+    y_max = max(max(p[1] for polygon in polygons1 for p in polygon),
+                max(p[1] for polygon in polygons2 for p in polygon))
+
+    ax.add_collection(p)
+    fig.tight_layout()
+
+    plt.xlim([x_min, x_max])
+    plt.ylim([y_min, y_max])
+
+    plt.show()
+    return
+
+
 def draw_iteration(problem, ifp, nfp, base_subject, current_polygons,
                    next_polygon, out_iter, inner_iter, add_str, batch_id):
     """
@@ -199,12 +245,15 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons,
             line_widths.append(3)
             patches.append(polygon)
 
-    for positioned_polygon in current_polygons:
+    for (key, rotation), positioned_polygon in current_polygons.items():
         polygon = Polygon(positioned_polygon)
         face_colors.append('lightcyan')
         edge_colors.append('skyblue')
         line_widths.append(3)
         patches.append(polygon)
+        mean_x = sum(point[0] for point in positioned_polygon) / len(positioned_polygon)
+        mean_y = sum(point[1] for point in positioned_polygon) / len(positioned_polygon)
+        plt.text(mean_x, mean_y, '{}_{}'.format(key, rotation))
 
     polygon = Polygon(next_polygon)
     face_colors.append('lightpink')
@@ -219,21 +268,21 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons,
                         alpha=0.4)
     ax.add_collection(p)
 
-    ax.set_xlim([-500, problem.material.height])
-    ax.set_ylim([-500, problem.material.height])
-    ax.axis('off')
+    ax.set_xlim([-2000, problem.material.height + 4000])
+    ax.set_ylim([-2000, problem.material.height])
+    # ax.axis('off')
 
     fig.tight_layout()
 
     plt.show()
     fig.savefig(
         os.path.join(
-            os.pardir, 'figure', 'iter',
+            os.getcwd(), 'figure', 'iter',
             '{}_construct_{}_{}_{}.pdf'.format(batch_id, out_iter, inner_iter,
                                                add_str)))
     fig.savefig(
         os.path.join(
-            os.pardir, 'figure', 'iter',
+            os.getcwd(), 'figure', 'iter',
             '{}_construct_{}_{}_{}.png'.format(batch_id, out_iter, inner_iter,
                                                add_str)))
     return
@@ -285,8 +334,8 @@ def draw_result(problem: Problem, objective, positions, file_name):
             edge_colors.append('red')
             patches.append(polygon)
     # 画形状
-    for i, shape in enumerate(problem.shapes):
-        position = positions[i]
+    for key, (rotation, position) in positions.items():
+        shape = problem.shapes[key][rotation]
         outline = shape.generate_positioned_polygon_output(position)
         polygon = Polygon(outline)
         face_colors.append('aqua')
@@ -312,11 +361,3 @@ def draw_result(problem: Problem, objective, positions, file_name):
     fig.savefig(file_name)
 
     return
-
-
-if __name__ == '__main__':
-    test_polygon = [[0, 0], [0, 100], [100, 100], [100, 0], [50, 50]]
-    tmp_shape = Shape(1, 1, test_polygon, [0], 1, 1)
-    tmp_shape.generate_offset_polygon(2.5)
-    draw_offset_shape(tmp_shape)
-    pprint(tmp_shape.offset_polygon)

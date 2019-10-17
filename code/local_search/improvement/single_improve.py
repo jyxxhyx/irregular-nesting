@@ -1,5 +1,5 @@
 from local_search.domain.solution import Solution
-from local_search.evaluation.positition import bottom_left_heuristic
+from local_search.evaluation.position import bottom_left_heuristic
 from local_search.evaluation.evaluation import calculate_objective
 from local_search.framework.base_alg import BaseAlg
 from domain.problem import Problem

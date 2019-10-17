@@ -1,11 +1,12 @@
-from domain import problem
-from geometry import nfp_generator
-from input_handler import data_reader, env
-from local_search.framework.tabu_search import TabuSearch
-from local_search.domain.solution import Solution
-from local_search.evaluation.evaluation import check_feasibility_distance
-from output_handler import drawer, writer
+from code.domain import problem
+from code.geometry import nfp_generator, similarity
+from code.input_handler import data_reader, env
+from code.local_search.framework.tabu_search import TabuSearch
+from code.local_search.domain.solution import Solution
+from code.local_search.evaluation.evaluation import check_feasibility_distance
+from code.output_handler import drawer, writer
 
+from itertools import combinations
 import logging
 import logging.config
 import math
@@ -71,10 +72,14 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
     instance, batch = _construct_instance(material_file, shape_file, scale,
                                           config)
 
+    similar_shapes = similarity.get_similar_polygons(
+        instance, config['hausdorff_threshold'])
+
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance, config)
-    tabu_search.initialize_nfps(input_folder, config, batch)
-    # tabu_search.initialize_nfps_pool()
+    # tabu_search.initialize_nfps(input_folder, config, batch)
+    tabu_search.initialize_nfps_pool(input_folder, config, batch,
+                                     similar_shapes)
     tabu_search.solve()
 
     # 获得结果，输出
@@ -95,18 +100,23 @@ def _construct_instance(material_file, shape_file, scale, config):
 
     # 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + config['extra_offset']
+    hole_offset_spacing = math.ceil(
+        material.spacing / 2) + config['extra_hole_offset']
 
     # 计算瑕疵的近似正多边形
     for hole in material.holes:
         hole.approximate_regular_polygon(config['polygon_vertices'],
-                                         offset_spacing)
+                                         hole_offset_spacing)
 
-    shape_list = data_reader.read_shapes_from_csv(shape_file, offset_spacing,
-                                                  config, scale)
-    batch = shape_list[0].batch_id
+    if config['is_debug']:
+        shape_dict, batch = data_reader.read_shapes_from_csv(
+            shape_file, offset_spacing, config, scale, config['debug_max_piece'])
+    else:
+        shape_dict, batch = data_reader.read_shapes_from_csv(
+            shape_file, offset_spacing, config, scale)
     logging.info('Start to solve batch {}!'.format(batch))
 
-    instance = problem.Problem(shape_list, material, offset_spacing)
+    instance = problem.Problem(shape_dict, material, offset_spacing, batch)
     return instance, batch
 
 
@@ -114,7 +124,8 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
                      input_folder, config):
     logger = logging.getLogger(__name__)
     material = instance.material
-    total_area = sum(shape.area for shape in instance.shapes)
+    total_area = sum(candidate_shapes[0].area
+                     for candidate_shapes in instance.shapes.values())
     logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
                                                          scale**2))
     logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
@@ -123,11 +134,11 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
     utilization = total_area / (objective * material.height)
     logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['output_folder'], input_folder,
+    file_name = os.path.join(os.getcwd(), config['output_folder'], input_folder,
                              file_name)
     writer.write_to_csv(file_name, instance, solution)
     file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['figure_folder'], input_folder,
+    file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
                              file_name)
     drawer.draw_result(instance, solution.objective, solution.positions,
                        file_name)
@@ -174,7 +185,7 @@ def main(config):
     nick_name = config['nick_name']
     scale = config['scale']
 
-    data_dir = os.path.join(os.pardir, config['input_folder'])
+    data_dir = os.path.join(os.getcwd(), config['input_folder'])
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:

@@ -10,8 +10,8 @@ Position = namedtuple('pos', ['x', 'y'])
 
 
 class Shape:
-    def __init__(self, shape_id, count, polygon, rotations, batch_id,
-                 material_id):
+    def __init__(self, shape_id, count, polygon, batch_id,
+                 material_id, rotate_degree, is_normalize=True):
         """
 
         Parameters
@@ -19,21 +19,23 @@ class Shape:
         shape_id
         count
         polygon：外轮廓坐标，需要逆时针方向提供
-        rotations
+        rotate_degree
         batch_id
         material_id
+        is_normalize
         """
         self.shape_id = shape_id
         self.count = count
         self.polygon = polygon
-        self.rotations = rotations
         self.batch_id = batch_id
         self.material_id = material_id
-        self.is_rotated = len(rotations) == 1
+        self.rotate_degree = rotate_degree
         self.offset_polygon = list()
         self.area = self.calculate_origin_area()
         self._calculate_extreme_values()
-        self._normalize()
+        if is_normalize:
+            self._normalize()
+        self.similar_shape = self
         return
 
     def generate_offset_rectangular(self, offset):
@@ -140,6 +142,12 @@ class Shape:
         return
 
     def _normalize(self):
+        """
+        调整坐标，使得polygon的min_x和min_y为0，reference point在坐标原点
+        Returns
+        -------
+
+        """
         self.polygon = [[p[0] - self.min_x, p[1] - self.min_y]
                         for p in self.polygon]
         self.max_x -= self.min_x
@@ -148,10 +156,8 @@ class Shape:
         self.min_y = 0
         return
 
+    def __hash__(self):
+        return self.__repr__().__hash__()
 
-if __name__ == '__main__':
-    test_polygon = [[0, 0], [0, 100], [100, 100], [100, 0], [50, 50]]
-    shape = Shape(1, 1, test_polygon, [0], 1, 1)
-    shape.generate_offset_polygon(2.5)
-    pprint(shape.offset_polygon)
-    print(shape.area)
+    def __repr__(self):
+        return '{}_{}'.format(self.shape_id, self.rotate_degree)

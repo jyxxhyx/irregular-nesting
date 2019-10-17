@@ -1,4 +1,4 @@
-from domain.problem import Material, Shape
+from code.domain.problem import Material, Shape
 
 import logging
 import numbers
@@ -30,6 +30,8 @@ def generate_nfp_pool(info):
     polygon2 = info['polygon2']
     shape1_str = info['shape1_str']
     shape2_str = info['shape2_str']
+    shape1_rotation = info['shape1_rotation']
+    shape2_rotation = info['shape2_rotation']
     precision = info['precision']
 
     logger = logging.getLogger(__name__)
@@ -37,8 +39,8 @@ def generate_nfp_pool(info):
         pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1,
                                                            polygon2)), precision)
     result = _clean_empty_element_nested_list(result)
-    # logger.info('{}-{}'.format(shape1_str, shape2_str))
-    return result, shape1_str, shape2_str
+    # logger.info('{}-{}-{}-{}'.format(shape1_str, shape1_rotation, shape2_str, shape2_rotation))
+    return result, shape1_str, shape2_str, shape1_rotation, shape2_rotation
 
 
 def generate_ifp(material: Material, shape: Shape):
@@ -125,35 +127,3 @@ def _clean_empty_element_nested_list(nested_list: List[List[float]]):
     """
     nested_list = [element for element in nested_list if len(element) > 0]
     return nested_list
-
-
-def intersection():
-    ifp = [[0, 0], [20, 0], [20, 20], [0, 20]]
-    nfp = [[10, 10], [30, 10], [30, 30], [10, 30]]
-    result = diff_ifp_nfps(ifp, nfp)
-    pprint(result)
-
-
-if __name__ == '__main__':
-    # poly2 = [[0, 0], [10, 0], [10, 10], [0, 10]]
-    # poly1 = [[5, 5], [15, 5], [11, 15]]
-    # # pprint(generate_nfp(poly1, poly2))
-    #
-    # rec_width = 100
-    # rec_height = 100
-    #
-    # polygon_min_x = 10
-    # polygon_min_y = 10
-    # polygon_max_x = 20
-    # polygon_max_y = 20
-    #
-    # # pprint(generate_ifp(rec_width, rec_height, polygon_min_x, polygon_min_y, polygon_max_x, polygon_max_y))
-    #
-    # nfp_list = list()
-    # nfp_list.append(poly1)
-    # nfp_list.append(poly2)
-    #
-    # temp_ifp = generate_ifp(rec_width, rec_height, polygon_min_x, polygon_min_y, polygon_max_x, polygon_max_y)
-    # pprint(intersect_ifp_nfps(temp_ifp, nfp_list))
-
-    intersection()
