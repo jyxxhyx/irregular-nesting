@@ -11,7 +11,7 @@ Position = namedtuple('pos', ['x', 'y'])
 
 class Shape:
     def __init__(self, shape_id, count, polygon, batch_id,
-                 material_id, rotate_degree):
+                 material_id, rotate_degree, is_normalize=True):
         """
 
         Parameters
@@ -22,6 +22,7 @@ class Shape:
         rotate_degree
         batch_id
         material_id
+        is_normalize
         """
         self.shape_id = shape_id
         self.count = count
@@ -32,7 +33,8 @@ class Shape:
         self.offset_polygon = list()
         self.area = self.calculate_origin_area()
         self._calculate_extreme_values()
-        self._normalize()
+        if is_normalize:
+            self._normalize()
         self.similar_shape = self
         return
 

@@ -28,7 +28,9 @@ initial_weight: 1
 increment_weight: 0.1
 
 # 是否为debug模式（是的话会输出单步迭代图片）
-is_debug: false
+is_debug: False
+# debug模式下读入的shape数量（仅仅在debug模式下有效）
+debug_max_piece: 10
 
 # PyClipper相关系数
 clipper:

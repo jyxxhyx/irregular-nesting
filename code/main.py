@@ -108,11 +108,15 @@ def _construct_instance(material_file, shape_file, scale, config):
         hole.approximate_regular_polygon(config['polygon_vertices'],
                                          hole_offset_spacing)
 
-    shape_dict, batch = data_reader.read_shapes_from_csv(
-        shape_file, offset_spacing, config, scale)
+    if config['is_debug']:
+        shape_dict, batch = data_reader.read_shapes_from_csv(
+            shape_file, offset_spacing, config, scale, config['debug_max_piece'])
+    else:
+        shape_dict, batch = data_reader.read_shapes_from_csv(
+            shape_file, offset_spacing, config, scale)
     logging.info('Start to solve batch {}!'.format(batch))
 
-    instance = problem.Problem(shape_dict, material, offset_spacing)
+    instance = problem.Problem(shape_dict, material, offset_spacing, batch)
     return instance, batch
 
 
@@ -120,9 +124,8 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
                      input_folder, config):
     logger = logging.getLogger(__name__)
     material = instance.material
-    total_area = sum(shape.area
-                     for candidate_shapes in instance.shapes.values()
-                     for shape in candidate_shapes.values())
+    total_area = sum(candidate_shapes[0].area
+                     for candidate_shapes in instance.shapes.values())
     logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
                                                          scale**2))
     logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))

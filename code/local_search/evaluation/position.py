@@ -15,7 +15,7 @@ def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
     positions = dict()
 
     positioned_polygons = dict()
-    positioned_polygon_indices = list()
+    # positioned_polygon_indices = list()
 
     # TODO ifp计算逻辑简化后，可以不纪录base_subject，目前debug需要，先保留
     base_subject = material.get_margin_polygon(material.width)
@@ -41,12 +41,24 @@ def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
 
                 nfp_hole = _get_nfp(shape, hole, nfps, Position(0, 0),
                                     config['clipper'])
+                if config['is_debug']:
+                    drawer.draw_iteration(problem, ifp_polygon, nfp_hole,
+                                          base_subject, positioned_polygons,
+                                          shape.offset_polygon, outer_iter,
+                                          (hole.shape_id, 0, rotation),
+                                          'a', problem.batch_id)
                 ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_hole)
+                if config['is_debug']:
+                    drawer.draw_iteration(problem, ifp_polygon, nfp_hole,
+                                          base_subject, positioned_polygons,
+                                          shape.offset_polygon, outer_iter,
+                                          (hole.shape_id, 0, rotation),
+                                          'b', problem.batch_id)
 
             for (previous_key,
                  previous_rotation), polygon in positioned_polygons.items():
 
-                positioned_shape = problem.shapes[previous_key][rotation]
+                positioned_shape = problem.shapes[previous_key][previous_rotation]
                 position = positions[previous_key][1]
                 nfp_polygon = _get_nfp(shape, positioned_shape, nfps, position,
                                        config['clipper'])
@@ -54,15 +66,15 @@ def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
                     drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
                                           base_subject, positioned_polygons,
                                           shape.offset_polygon, outer_iter,
-                                          (previous_key, previous_rotation),
-                                          'a', problem.shapes[0].batch_id)
+                                          (previous_key, previous_rotation, rotation),
+                                          'a', problem.batch_id)
                 ifp_polygon = diff_ifp_nfps(ifp_polygon, nfp_polygon)
                 if config['is_debug']:
                     drawer.draw_iteration(problem, ifp_polygon, nfp_polygon,
                                           base_subject, positioned_polygons,
                                           shape.offset_polygon, outer_iter,
-                                          (previous_key, previous_rotation),
-                                          'b', problem.shapes[0].batch_id)
+                                          (previous_key, previous_rotation, rotation),
+                                          'b', problem.batch_id)
 
             # 每次选择一个x轴方向、y轴方向加权最小的点放置形状。
             # weight -> 0, y轴方向最小的位置，weight -> +infinity，x轴方向最小的位置
@@ -78,13 +90,14 @@ def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
                 min_position = Position(ifp_polygon[min_idx1][min_idx][0],
                                         ifp_polygon[min_idx1][min_idx][1])
 
+        # logger.info('Shape {} with rotation {} chosen.'.format(key, min_rotation))
         positions[key] = (min_rotation, min_position)
 
         positioned_polygon = candidate_shapes[
             min_rotation].generate_positioned_offset_polygon(positions[key][1])
         base_subject = diff_ifp_nfps(base_subject, positioned_polygon)
         positioned_polygons[(key, min_rotation)] = positioned_polygon
-        positioned_polygon_indices.append((key, min_rotation))
+        # positioned_polygon_indices.append((key, min_rotation))
 
         # x轴方向权重会不断增加
         weight += config['increment_weight']

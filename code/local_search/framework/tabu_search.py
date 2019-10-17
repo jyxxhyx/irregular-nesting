@@ -4,10 +4,12 @@ from local_search.construction.constructor import polygon_area_descending, offse
 from local_search.improvement.perturb import single_shuffle
 from local_search.domain.solution import Solution
 from geometry.nfp_generator import generate_nfp, generate_nfp_pool
+from geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
 from domain.problem import Problem
+from output_handler.drawer import draw_two_polygons
 
 from collections import deque
-from itertools import combinations_with_replacement, product
+from itertools import combinations_with_replacement, product, permutations
 from copy import deepcopy, copy
 from typing import Union
 import logging
@@ -91,6 +93,8 @@ class TabuSearch(BaseAlg):
         # 最好不要超过cpu数
         logger = logging.getLogger(__name__)
 
+        # self.test_rotation_nfp(similar_shapes, config['clipper'])
+
         nfps_file_name = _get_json_file_name(config, batch_id)
         nfps_full_name = os.path.join(os.pardir, config['output_folder'],
                                       input_folder, nfps_file_name)
@@ -104,30 +108,78 @@ class TabuSearch(BaseAlg):
             p = Pool(processes=number_processes)
             logger.info('Prepare the input.')
 
+            rotate_shapes = [
+                self.problem.shapes[shape.shape_id][180]
+                for shape in similar_shapes
+            ]
+
+            # TODO 考虑旋转的情况
             iterator = list()
             iterator.extend(
-                product(self.problem.material.holes, similar_shapes))
+                product(similar_shapes, self.problem.material.holes))
+            # 考虑旋转
+            iterator.extend(product(rotate_shapes,
+                                    self.problem.material.holes))
+
             iterator.extend(combinations_with_replacement(similar_shapes, 2))
+            iterator.extend(product(similar_shapes, rotate_shapes))
 
             input_list = [{
                 'polygon1': shape1.offset_polygon,
                 'polygon2': shape2.offset_polygon,
-                'shape1_str': str(shape1),
-                'shape2_str': str(shape2),
+                'shape1_str': shape1.shape_id,
+                'shape2_str': shape2.shape_id,
+                'shape1_rotation': shape1.rotate_degree,
+                'shape2_rotation': shape2.rotate_degree,
                 'precision': config['clipper']['precision']
             } for shape1, shape2 in iterator]
             logger.info('Start to map.')
             result = p.map(generate_nfp_pool, input_list)
-            for single_nfp, shape1_str, shape2_str in result:
-                self.nfps[shape1_str + shape2_str] = single_nfp
-                self.nfps[shape2_str +
-                          shape1_str] = [[[-point[0], -point[1]]
-                                          for point in single_polygon]
-                                         for single_polygon in single_nfp]
+            logger.info('Multiprocessing finished.')
+            for single_nfp, shape1_id, shape2_id, shape1_rotation, shape2_rotation in result:
+                rotate_nfp = rotate_180_3d(single_nfp)
+                self.nfps['{}_{}{}_{}'.format(shape1_id, shape1_rotation,
+                                              shape2_id,
+                                              shape2_rotation)] = single_nfp
+                self.nfps['{}_{}{}_{}'.format(shape2_id, shape2_rotation,
+                                              shape1_id,
+                                              shape1_rotation)] = rotate_nfp
+
+                shift_x = -self.problem.shapes[shape1_id][0].max_x
+                shift_y = -self.problem.shapes[shape1_id][0].max_y
+                if shape2_id in self.problem.shapes:
+                    shift_x += self.problem.shapes[shape2_id][0].max_x
+                    shift_y += self.problem.shapes[shape2_id][0].max_y
+                    self.nfps['{}_{}{}_{}'.format(
+                        shape1_id, change_degree(shape1_rotation), shape2_id,
+                        change_degree(shape2_rotation))] = rotate_180_shift_3d(
+                            single_nfp, shift_x, shift_y)
+                    # nfp_temp = generate_nfp(
+                    #     self.problem.shapes[shape1_id][change_degree(
+                    #         shape1_rotation)].offset_polygon,
+                    #     self.problem.shapes[shape2_id][change_degree(
+                    #         shape2_rotation)].offset_polygon,
+                    #     config['clipper'])
+                    # draw_two_polygons(
+                    #     rotate_180_shift_3d(single_nfp, shift_x, shift_y),
+                    #     nfp_temp)
+                    self.nfps['{}_{}{}_{}'.format(
+                        shape2_id, change_degree(shape2_rotation), shape1_id,
+                        change_degree(shape1_rotation))] = rotate_180_shift_3d(
+                            rotate_nfp, -shift_x, -shift_y)
+                    # nfp_temp = generate_nfp(
+                    #     self.problem.shapes[shape2_id][change_degree(
+                    #         shape2_rotation)].offset_polygon,
+                    #     self.problem.shapes[shape1_id][change_degree(
+                    #         shape1_rotation)].offset_polygon,
+                    #     config['clipper'])
+                    # draw_two_polygons(
+                    #     rotate_180_shift_3d(rotate_nfp, -shift_x, -shift_y),
+                    #     nfp_temp)
             p.close()
             p.join()
             p.terminate()
-            logger.info('Multiprocessing finished.')
+            logger.info('Results gathered.')
 
             with open(nfps_full_name, 'w') as json_file:
                 ujson.dump(self.nfps, json_file)
@@ -142,10 +194,37 @@ class TabuSearch(BaseAlg):
                                   self.config['clipper'])
         # p1相对于p2的nfp取负即为p2相对于p1的nfp
         self.nfps[str(shape1) + str(shape2)] = single_nfp
-        self.nfps[str(shape2) +
-                  str(shape1)] = [[[-point[0], -point[1]]
-                                   for point in single_polygon]
-                                  for single_polygon in single_nfp]
+        self.nfps[str(shape2) + str(shape1)] = rotate_180_3d(single_nfp)
+
+    def test_rotation_nfp(self, similar_shapes, config):
+        shape1 = similar_shapes.pop()
+        shape2 = similar_shapes.pop()
+
+        shape1_r = self.problem.shapes[shape1.shape_id][180]
+        shape2_r = self.problem.shapes[shape2.shape_id][180]
+
+        # nfp1 = generate_nfp(shape1.offset_polygon, shape2.offset_polygon, config)
+        # nfp1_t = rotate_180_shift_3d(nfp1, shape2.max_x - shape1.max_x, shape2.max_y - shape1.max_y)
+        # nfp1_r = generate_nfp(shape1_r.offset_polygon, shape2_r.offset_polygon, config)
+        # draw_two_polygons(nfp1_r, nfp1_t)
+
+        # nfp1 = generate_nfp(shape1_r.offset_polygon, shape2_r.offset_polygon, config)
+        # nfp1_t = rotate_180_shift_3d(nfp1, shape2_r.max_x - shape1_r.max_x, shape2_r.max_y - shape1_r.max_y)
+        # nfp1_r = generate_nfp(shape1.offset_polygon, shape2.offset_polygon, config)
+        # draw_two_polygons(nfp1_r, nfp1_t)
+
+        # nfp1 = generate_nfp(shape2_r.offset_polygon, shape1_r.offset_polygon, config)
+        # nfp1_t = rotate_180_shift_3d(nfp1, shape1_r.max_x - shape2_r.max_x, shape1_r.max_y - shape2_r.max_y)
+        # nfp1_r = generate_nfp(shape2.offset_polygon, shape1.offset_polygon, config)
+        # draw_two_polygons(nfp1_r, nfp1_t)
+
+        nfp1 = generate_nfp(shape1.offset_polygon, shape2.offset_polygon,
+                            config)
+        nfp2 = generate_nfp(shape2.offset_polygon, shape1.offset_polygon,
+                            config)
+
+        draw_two_polygons(nfp1, rotate_180_3d(nfp2))
+        return
 
 
 def _get_json_file_name(config, batch_id):

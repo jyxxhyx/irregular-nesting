@@ -10,10 +10,11 @@ import pyclipper
 
 class Problem:
     def __init__(self, shapes: Dict[str, Dict[int, Shape]], material: Material,
-                 offset_spacing):
+                 offset_spacing, batch_id):
         self.shapes = shapes
         self.material = material
         self.offset_spacing = offset_spacing
+        self.batch_id = batch_id
         return
 
     def check_orientation(self):

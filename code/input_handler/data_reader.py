@@ -40,12 +40,12 @@ def read_shapes_from_csv(file_name,
             if 0 in shape_rotations:
                 shape_dict[shape_id][0] = _construct_shape(
                     shape_id, shape_num, shape_polygon, batch_id, material_id,
-                    spacing, config, 0)
+                    spacing, config, 0, is_normalize=True)
 
             if 180 in shape_rotations:
                 shape_dict[shape_id][180] = _construct_shape(
                     shape_id, shape_num, rotate_180(shape_polygon), batch_id,
-                    material_id, spacing, config, 180)
+                    material_id, spacing, config, 180, is_normalize=True)
 
             # 设置读取数量上限（debug时候会用到）
             if len(shape_dict) > max_shape_len:
@@ -79,7 +79,7 @@ def read_material_from_csv(file_name, scale=1):
 
 
 def _construct_shape(shape_id, shape_num, shape_polygon, batch_id, material_id,
-                     spacing, config, rotate_degree) -> Shape:
+                     spacing, config, rotate_degree, is_normalize=True) -> Shape:
     # 保证所有多边形的坐标都是逆时针方向的
     if not pyclipper.Orientation(shape_polygon):
         shape = Shape(shape_id,
@@ -87,14 +87,14 @@ def _construct_shape(shape_id, shape_num, shape_polygon, batch_id, material_id,
                       list(reversed(shape_polygon)),
                       batch_id,
                       material_id,
-                      rotate_degree=rotate_degree)
+                      rotate_degree=rotate_degree, is_normalize=is_normalize)
     else:
         shape = Shape(shape_id,
                       shape_num,
                       shape_polygon,
                       batch_id,
                       material_id,
-                      rotate_degree=rotate_degree)
+                      rotate_degree=rotate_degree, is_normalize=is_normalize)
 
     shape.generate_offset_polygon(
         spacing,

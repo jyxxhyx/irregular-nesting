@@ -9,12 +9,15 @@ class Hole:
         self.radius = radius
         self.offset_polygon = list()
         self.offset_vertices = 0
+        self.rotate_degree = 0
         self.similar_shape = self
+        self.max_x = 0
+        self.max_y = 0
         return
 
     def approximate_regular_polygon(self, number_vertices: int, spacing: int):
         """
-        用一个正多边形来近似破损的洞.
+        用一个正多边形来近似瑕疵.
         具体计算如下：
         多边形两点夹角 alpha = 2 * pi / n
         多边形边长 r = radius / cos(alpha) + spacing
@@ -37,6 +40,8 @@ class Hole:
                 self.center[0] + regular_polygon_radius * math.cos(i * angle),
                 self.center[1] + regular_polygon_radius * math.sin(i * angle)
             ])
+        self.max_x = max(point[0] for point in self.offset_polygon)
+        self.max_y = max(point[1] for point in self.offset_polygon)
         return
 
     def scaled_polygon(self, scale):
@@ -53,7 +58,7 @@ class Hole:
         return polygon
 
     def __repr__(self):
-        return self.shape_id
+        return '{}_{}'.format(self.shape_id, self.rotate_degree)
 
 
 class Material:
