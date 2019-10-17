@@ -30,6 +30,8 @@ def generate_nfp_pool(info):
     polygon2 = info['polygon2']
     shape1_str = info['shape1_str']
     shape2_str = info['shape2_str']
+    shape1_rotation = info['shape1_rotation']
+    shape2_rotation = info['shape2_rotation']
     precision = info['precision']
 
     logger = logging.getLogger(__name__)
@@ -37,8 +39,8 @@ def generate_nfp_pool(info):
         pyclipper.SimplifyPolygons(pyclipper.MinkowskiDiff(polygon1,
                                                            polygon2)), precision)
     result = _clean_empty_element_nested_list(result)
-    # logger.info('{}-{}'.format(shape1_str, shape2_str))
-    return result, shape1_str, shape2_str
+    # logger.info('{}-{}-{}-{}'.format(shape1_str, shape1_rotation, shape2_str, shape2_rotation))
+    return result, shape1_str, shape2_str, shape1_rotation, shape2_rotation
 
 
 def generate_ifp(material: Material, shape: Shape):
