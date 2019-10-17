@@ -11,6 +11,7 @@ import logging
 import logging.config
 import math
 import os
+import sys
 from pprint import pprint
 from timeit import default_timer as timer
 import yaml
@@ -179,17 +180,20 @@ def _write_zip_file(input_dir, config):
 
 
 def main(config):
-    target_folders = config['folders']
+    folder_keyword = config['folder_keyword']
     material_str = config['material_str']
     shape_str = config['shape_str']
     nick_name = config['nick_name']
     scale = config['scale']
 
-    data_dir = os.path.join(os.getcwd(), config['input_folder'])
+    if config['is_production']:
+        data_dir = config['production_data']
+    else:
+        data_dir = os.path.join(os.getcwd(), config['input_folder'])
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:
-            if input_dir in target_folders:
+            if folder_keyword in input_dir:
                 instance_dir = os.path.join(root, input_dir)
                 # 遍历各dataset下面不同算例文件
                 _check_create_result_directory(instance_dir, config)
@@ -209,6 +213,7 @@ def main(config):
 
 if __name__ == '__main__':
     main_config = env.get_configuration()
+    main_config['is_production'] = (len(sys.argv) >= 2)
     logging_path = os.path.join(os.getcwd(), main_config['logging_config'])
     setup_logging(logging_path)
     main(main_config)
