@@ -124,25 +124,30 @@ def _construct_instance(material_file, shape_file, scale, config):
 def _output_solution(instance, solution, objective, scale, nick_name, batch,
                      input_folder, config):
     logger = logging.getLogger(__name__)
+
     material = instance.material
     total_area = sum(candidate_shapes[0].area
                      for candidate_shapes in instance.shapes.values())
-    logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
-                                                         scale**2))
-    logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
-    logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
-                                                  1000**2 / scale**2))
     utilization = total_area / (objective * material.height)
-    logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
+    if not config['is_production']:
+        logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
+                                                             scale**2))
+        logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
+        logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
+                                                      1000**2 / scale**2))
+        logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
+
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
     file_name = os.path.join(os.getcwd(), config['output_folder'], input_folder,
                              file_name)
     writer.write_to_csv(file_name, instance, solution)
-    file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
-                             file_name)
-    drawer.draw_result(instance, solution.objective, solution.positions,
-                       file_name)
+
+    if not config['is_production']:
+        file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
+        file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
+                                 file_name)
+        drawer.draw_result(instance, solution.objective, solution.positions,
+                           file_name)
     return
 
 
