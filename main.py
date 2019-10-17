@@ -1,10 +1,10 @@
-from domain import problem
-from geometry import nfp_generator, similarity
-from input_handler import data_reader, env
-from local_search.framework.tabu_search import TabuSearch
-from local_search.domain.solution import Solution
-from local_search.evaluation.evaluation import check_feasibility_distance
-from output_handler import drawer, writer
+from code.domain import problem
+from code.geometry import nfp_generator, similarity
+from code.input_handler import data_reader, env
+from code.local_search.framework.tabu_search import TabuSearch
+from code.local_search.domain.solution import Solution
+from code.local_search.evaluation.evaluation import check_feasibility_distance
+from code.output_handler import drawer, writer
 
 from itertools import combinations
 import logging
@@ -134,11 +134,11 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
     utilization = total_area / (objective * material.height)
     logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['output_folder'], input_folder,
+    file_name = os.path.join(os.getcwd(), config['output_folder'], input_folder,
                              file_name)
     writer.write_to_csv(file_name, instance, solution)
     file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.pardir, config['figure_folder'], input_folder,
+    file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
                              file_name)
     drawer.draw_result(instance, solution.objective, solution.positions,
                        file_name)
@@ -185,7 +185,7 @@ def main(config):
     nick_name = config['nick_name']
     scale = config['scale']
 
-    data_dir = os.path.join(os.pardir, config['input_folder'])
+    data_dir = os.path.join(os.getcwd(), config['input_folder'])
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:

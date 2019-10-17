@@ -1,12 +1,12 @@
-from local_search.framework.base_alg import BaseAlg
-from local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
+from code.local_search.framework.base_alg import BaseAlg
+from code.local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
     rectangular_area_descending, rectangular_diagonal_descending, rectangular_residual_area_descending
-from local_search.improvement.perturb import single_shuffle
-from local_search.domain.solution import Solution
-from geometry.nfp_generator import generate_nfp, generate_nfp_pool
-from geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
-from domain.problem import Problem
-from output_handler.drawer import draw_two_polygons
+from code.local_search.improvement.perturb import single_shuffle
+from code.local_search.domain.solution import Solution
+from code.geometry.nfp_generator import generate_nfp, generate_nfp_pool
+from code.geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
+from code.domain.problem import Problem
+from code.output_handler.drawer import draw_two_polygons
 
 from collections import deque
 from itertools import combinations_with_replacement, product, permutations
@@ -62,7 +62,7 @@ class TabuSearch(BaseAlg):
         logger = logging.getLogger(__name__)
 
         nfps_file_name = _get_json_file_name(config, batch_id)
-        nfps_full_name = os.path.join(os.pardir, config['output_folder'],
+        nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
             logger.info('NFPs json file exists.')
@@ -96,7 +96,7 @@ class TabuSearch(BaseAlg):
         # self.test_rotation_nfp(similar_shapes, config['clipper'])
 
         nfps_file_name = _get_json_file_name(config, batch_id)
-        nfps_full_name = os.path.join(os.pardir, config['output_folder'],
+        nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
             logger.info('NFPs json file exists.')

@@ -1,12 +1,9 @@
-from collections import OrderedDict
-
-import numpy
-
-from domain.problem import Shape, Material, Problem
-from domain.material import Hole
-from geometry.rotate import rotate_180
+from code.domain.problem import Shape, Material, Problem
+from code.domain.material import Hole
+from code.geometry.rotate import rotate_180
 
 import ast
+from collections import OrderedDict
 import csv
 import sys
 from typing import List, Tuple, Dict

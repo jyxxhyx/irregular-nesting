@@ -1,4 +1,4 @@
-from domain.problem import Shape, Problem
+from code.domain.problem import Shape, Problem
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -277,12 +277,12 @@ def draw_iteration(problem, ifp, nfp, base_subject, current_polygons,
     plt.show()
     fig.savefig(
         os.path.join(
-            os.pardir, 'figure', 'iter',
+            os.getcwd(), 'figure', 'iter',
             '{}_construct_{}_{}_{}.pdf'.format(batch_id, out_iter, inner_iter,
                                                add_str)))
     fig.savefig(
         os.path.join(
-            os.pardir, 'figure', 'iter',
+            os.getcwd(), 'figure', 'iter',
             '{}_construct_{}_{}_{}.png'.format(batch_id, out_iter, inner_iter,
                                                add_str)))
     return
