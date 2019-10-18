@@ -88,12 +88,12 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
     objective = tabu_search.get_best_objective()
 
     check_feasibility_distance(solution, instance, scale)
-    _output_solution(instance, solution, objective, scale, nick_name, batch,
-                     input_folder, config)
+    file_name = _output_solution(instance, solution, objective, scale,
+                                 nick_name, batch, input_folder, config)
 
     end = timer()
     logger.info('Total solution time:\t{:.3f}s\n'.format(end - start))
-    return
+    return file_name
 
 
 def _construct_instance(material_file, shape_file, scale, config):
@@ -111,7 +111,8 @@ def _construct_instance(material_file, shape_file, scale, config):
 
     if config['is_debug']:
         shape_dict, batch = data_reader.read_shapes_from_csv(
-            shape_file, offset_spacing, config, scale, config['debug_max_piece'])
+            shape_file, offset_spacing, config, scale,
+            config['debug_max_piece'])
     else:
         shape_dict, batch = data_reader.read_shapes_from_csv(
             shape_file, offset_spacing, config, scale)
@@ -130,25 +131,26 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
                      for candidate_shapes in instance.shapes.values())
     utilization = total_area / (objective * material.height)
     if not config['is_production']:
-        logger.info('Total area of shapes:\t{:.3f}m2'.format(total_area / 1000**2 /
-                                                             scale**2))
-        logger.info('Material length:\t{:.3f}m'.format(objective / 1000 / scale))
-        logger.info('Material area:\t{:.3f}m2'.format(objective * material.height /
-                                                      1000**2 / scale**2))
+        logger.info('Total area of shapes:\t{:.3f}m2'.format(
+            total_area / 1000**2 / scale**2))
+        logger.info('Material length:\t{:.3f}m'.format(objective / 1000 /
+                                                       scale))
+        logger.info('Material area:\t{:.3f}m2'.format(
+            objective * material.height / 1000**2 / scale**2))
         logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
 
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.getcwd(), config['output_folder'], input_folder,
-                             file_name)
+    file_name = os.path.join(os.getcwd(), config['output_folder'],
+                             input_folder, file_name)
     writer.write_to_csv(file_name, instance, solution)
 
     if not config['is_production']:
-        file_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
-        file_name = os.path.join(os.getcwd(), config['figure_folder'], input_folder,
-                                 file_name)
+        figure_name = '{}_{}_{:.3f}.pdf'.format(nick_name, batch, utilization)
+        figure_name = os.path.join(os.getcwd(), config['figure_folder'],
+                                   input_folder, figure_name)
         drawer.draw_result(instance, solution.objective, solution.positions,
-                           file_name)
-    return
+                           figure_name)
+    return file_name
 
 
 def _check_create_result_directory(input_dir, config):
@@ -173,14 +175,16 @@ def _check_create_result_directory(input_dir, config):
     return
 
 
-def _write_zip_file(input_dir, config):
+def _write_zip_file(input_dir, folder_name, solution_files, config):
     output_dir = input_dir.replace(config['input_folder'],
                                    config['output_folder'])
     with ZipFile(config['zip_file'], 'w') as zip_writer:
-        zip_writer.write(output_dir)
+        zip_writer.write(output_dir, folder_name)
         for file in os.listdir(output_dir):
             result_file = os.path.join(output_dir, file)
-            zip_writer.write(result_file)
+            if result_file in solution_files:
+                compressed_file = os.path.join(folder_name, file)
+                zip_writer.write(result_file, compressed_file)
     return
 
 
@@ -202,6 +206,7 @@ def main(config):
                 instance_dir = os.path.join(root, input_dir)
                 # 遍历各dataset下面不同算例文件
                 _check_create_result_directory(instance_dir, config)
+                solution_files = list()
                 for file in os.listdir(instance_dir):
                     # 根据面料输入来确定算例
                     if shape_str in file:
@@ -210,10 +215,12 @@ def main(config):
                         material_file = os.path.join(instance_dir, file)
                         shape_file = material_file.replace(
                             material_str, shape_str)
-                        _solve_one_instance(material_file, shape_file,
-                                            nick_name, scale, input_dir,
-                                            config)
-                _write_zip_file(instance_dir, config)
+                        file_name = _solve_one_instance(
+                            material_file, shape_file, nick_name, scale,
+                            input_dir, config)
+                        solution_files.append(file_name)
+                _write_zip_file(instance_dir, input_dir, solution_files,
+                                config)
 
 
 if __name__ == '__main__':

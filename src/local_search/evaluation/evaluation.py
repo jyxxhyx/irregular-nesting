@@ -164,17 +164,17 @@ def _check_shapes_pool(solution,
         for key, (inner_key, position) in solution.positions.items()
     ]
 
+    polygons = {
+        str(shape): shape.generate_positioned_polygon_output(
+            solution.positions[shape.shape_id][1], scale)
+        for shape in positioned_shapes
+    }
+
     input_list = [{
-        'polygon1':
-        shape1.generate_positioned_polygon_output(
-            solution.positions[shape1.shape_id][1], scale),
-        'polygon2':
-        shape2.generate_positioned_polygon_output(
-            solution.positions[shape2.shape_id][1], scale),
-        'shape1_str':
-        str(shape1),
-        'shape2_str':
-        str(shape2),
+        'polygon1': polygons[str(shape1)],
+        'polygon2': polygons[str(shape2)],
+        'shape1_str': str(shape1),
+        'shape2_str': str(shape2),
     } for shape1, shape2 in combinations(positioned_shapes, 2)]
 
     logger.info('Start to map.')
