@@ -1,6 +1,6 @@
-from code.domain.problem import Shape, Problem
-from code.geometry.hausdorff import hausdorff_list, distance_function_list
-from code.output_handler import drawer
+from src.domain.problem import Shape, Problem
+from src.geometry.hausdorff import hausdorff_list, distance_function_list
+from src.output_handler import drawer
 
 import logging
 import numpy as np
