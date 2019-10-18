@@ -163,9 +163,10 @@ class TabuSearch(BaseAlg):
             p.terminate()
             logger.info('Results gathered.')
 
-            with open(nfps_full_name, 'w') as json_file:
-                ujson.dump(self.nfps, json_file)
-                logger.info('NFPs saved to file: {}'.format(nfps_full_name))
+            if not config['is_production']:
+                with open(nfps_full_name, 'w') as json_file:
+                    ujson.dump(self.nfps, json_file)
+                    logger.info('NFPs saved to file: {}'.format(nfps_full_name))
         return
 
     def _calculate_one_nfp(self, index, shape1, shape2):

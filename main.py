@@ -219,8 +219,10 @@ def main(config):
                             material_file, shape_file, nick_name, scale,
                             input_dir, config)
                         solution_files.append(file_name)
-                _write_zip_file(instance_dir, input_dir, solution_files,
-                                config)
+                _write_zip_file(
+                    instance_dir,
+                    os.path.join(config['output_folder'], input_dir),
+                    solution_files, config)
 
 
 if __name__ == '__main__':

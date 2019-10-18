@@ -188,6 +188,9 @@ def _check_shapes_pool(solution,
                 shape1_str, shape2_str))
         if min_distance > distance:
             min_distance = distance
+    p.close()
+    p.join()
+    p.terminate()
     logger.info(
         'Minimum distance among shapes is {:.3f}.'.format(min_distance))
     return feasibility_flag
