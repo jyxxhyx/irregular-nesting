@@ -2,7 +2,7 @@
 logging_config: 'logging.yaml'
 
 # 数据集关键字
-folder_keyword: ''
+folder_keyword: 'B'
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字
@@ -15,7 +15,7 @@ scale: 10
 # 额外间隔距离
 extra_offset: 2
 # 瑕疵的额外间隔距离
-extra_hole_offset: 0.2
+extra_hole_offset: 0
 # 圆形瑕疵近似多边形边数
 polygon_vertices: 100
 
@@ -25,7 +25,7 @@ hausdorff_threshold: 1
 # 左底变种方法中，目标函数x轴初始权重
 initial_weight: 1
 # 左底变种方法中，目标函数x轴单次迭代增加权重
-increment_weight: 0.1
+increment_weight: 0.2
 
 # 是否为debug模式（是的话会输出单步迭代图片）
 is_debug: False
