@@ -34,9 +34,9 @@ def get_similar_polygons(instance: Problem, threshold):
                 shape2_id = shape2.shape_id
                 instance.shapes[shape2_id][180].similar_shape = instance.shapes[shape1_id][180].similar_shape
 
-                logger.info(
-                    'Hausdorff distance of shapes {} and {}: {}'.format(
-                        str(shape1), str(shape2), distance))
+                # logger.info(
+                #     'Hausdorff distance of shapes {} and {}: {}'.format(
+                #         str(shape1), str(shape2), distance))
                 break
 
     logger.info(distance_function_list.cache_info())

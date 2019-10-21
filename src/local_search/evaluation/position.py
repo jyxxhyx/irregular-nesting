@@ -23,7 +23,7 @@ def bottom_left_heuristic(problem: Problem, sequence: List[str], nfps,
     weight = config['initial_weight']
 
     for outer_iter, key in enumerate(sequence):
-        if outer_iter % 10 == 9:
+        if outer_iter % 50 == 49:
             logger.info('{} shapes positioned.'.format(outer_iter + 1))
 
         candidate_shapes = problem.shapes[key]
