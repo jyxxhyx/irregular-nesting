@@ -13,6 +13,7 @@ from collections import deque
 from itertools import combinations_with_replacement, product, permutations
 from copy import deepcopy, copy
 from random import randint
+import random
 from typing import Union
 import logging
 import os
@@ -32,6 +33,8 @@ class TabuSearch(BaseAlg):
         return
 
     def solve(self):
+        # 固定随机种子
+        random.seed = 0
         logger = logging.getLogger(__name__)
         # initial_sequence = polygon_area_descending(self.problem)
         # initial_sequence = offset_polygon_area_descending(self.problem)
