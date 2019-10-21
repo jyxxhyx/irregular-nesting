@@ -27,6 +27,9 @@ initial_weight: 1
 # 左底变种方法中，目标函数x轴单次迭代增加权重
 increment_weight: 0.2
 
+# 邻域搜索次数
+local_search_iteration: 20
+
 # 是否为debug模式（是的话会输出单步迭代图片）
 is_debug: False
 # debug模式下读入的shape数量（仅仅在debug模式下有效）
