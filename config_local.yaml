@@ -2,7 +2,7 @@
 logging_config: 'logging.yaml'
 
 # 数据集关键字
-folder_keyword: 'B'
+folder_keyword: ''
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字
@@ -13,19 +13,22 @@ nick_name: 'jiangyincaijiao1'
 # 缩放系数
 scale: 10
 # 额外间隔距离
-extra_offset: 2
+extra_offset: 3
 # 瑕疵的额外间隔距离
 extra_hole_offset: 0
 # 圆形瑕疵近似多边形边数
 polygon_vertices: 100
 
 # hausdorff距离阈值
-hausdorff_threshold: 1
+hausdorff_threshold: 0
 
 # 左底变种方法中，目标函数x轴初始权重
 initial_weight: 1
 # 左底变种方法中，目标函数x轴单次迭代增加权重
 increment_weight: 0.2
+
+# 邻域搜索次数
+local_search_iteration: 20
 
 # 是否为debug模式（是的话会输出单步迭代图片）
 is_debug: False
@@ -35,7 +38,7 @@ debug_max_piece: 10
 # PyClipper相关系数
 clipper:
   meter_limit: 2
-  arc_tolerance: 0.25
+  arc_tolerance: 0.2
   precision: 1.01
 
 production_data: '/tcdata'

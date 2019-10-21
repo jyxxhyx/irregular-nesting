@@ -2,6 +2,7 @@ from src.local_search.framework.base_alg import BaseAlg
 from src.local_search.construction.constructor import polygon_area_descending, offset_polygon_area_descending, \
     rectangular_area_descending, rectangular_diagonal_descending, rectangular_residual_area_descending
 from src.local_search.improvement.perturb import single_shuffle
+from src.local_search.improvement.swap import swap_two_shapes, reverse_swap_two_shapes
 from src.local_search.domain.solution import Solution
 from src.geometry.nfp_generator import generate_nfp, generate_nfp_pool
 from src.geometry.rotate import rotate_180_3d, rotate_180_shift_3d, change_degree
@@ -11,6 +12,8 @@ from src.output_handler.drawer import draw_two_polygons
 from collections import deque
 from itertools import combinations_with_replacement, product, permutations
 from copy import deepcopy, copy
+from random import randint
+import random
 from typing import Union
 import logging
 import os
@@ -30,6 +33,9 @@ class TabuSearch(BaseAlg):
         return
 
     def solve(self):
+        # 固定随机种子
+        random.seed = 0
+        logger = logging.getLogger(__name__)
         # initial_sequence = polygon_area_descending(self.problem)
         # initial_sequence = offset_polygon_area_descending(self.problem)
         # initial_sequence = rectangular_residual_area_descending(self.problem)
@@ -42,8 +48,29 @@ class TabuSearch(BaseAlg):
         self.best_solution = Solution(
             copy(initial_sequence), deepcopy(self.current_solution.positions),
             self.current_solution.objective)
-
+        logger.info('Find a solution with objective {}'.format(
+            self.current_solution.objective))
         # TODO improvement阶段待实现（包括tabu search更新机制）
+        for improve_idx in range(self.config['local_search_iteration']):
+            len_shapes = len(self.problem.shapes)
+            idx_1 = randint(0, len_shapes)
+            idx_2 = randint(0, len_shapes)
+            self.current_solution.sequences = swap_two_shapes(
+                self.current_solution.sequences, idx_1, idx_2)
+            self.current_solution.generate_positions(self.problem, self.nfps,
+                                                     self.config)
+            self.current_solution.generate_objective(self.problem)
+            logger.info('Iteration {}. Swap positions {} and {}.'.format(improve_idx, idx_1, idx_2))
+            logger.info('Find a solution with objective {}'.format(
+                self.current_solution.objective))
+            if self.current_solution.objective < self.best_solution.objective:
+                self.best_solution = Solution(
+                    copy(initial_sequence),
+                    deepcopy(self.current_solution.positions),
+                    copy(self.current_solution.objective))
+            else:
+                self.current_solution.sequences = reverse_swap_two_shapes(
+                    self.current_solution.sequences, idx_1, idx_2)
         return
 
     def get_best_solution(self):
@@ -166,7 +193,8 @@ class TabuSearch(BaseAlg):
             if not config['is_production']:
                 with open(nfps_full_name, 'w') as json_file:
                     ujson.dump(self.nfps, json_file)
-                    logger.info('NFPs saved to file: {}'.format(nfps_full_name))
+                    logger.info(
+                        'NFPs saved to file: {}'.format(nfps_full_name))
         return
 
     def _calculate_one_nfp(self, index, shape1, shape2):

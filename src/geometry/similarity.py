@@ -22,6 +22,16 @@ def get_similar_polygons(instance: Problem, threshold):
     all_shapes = [
         candidate_shapes[0] for candidate_shapes in instance.shapes.values()
     ]
+    _calculate_polygons_similarity(instance, all_shapes, threshold)
+
+    logger.info(distance_function_list.cache_info())
+    similar_offset_shapes = {shape.similar_shape for shape in all_shapes}
+    logger.info('Size of origin shapes: {}. Size of unique shapes: {}.'.format(
+        len(all_shapes), len(similar_offset_shapes)))
+    return similar_offset_shapes
+
+
+def _calculate_polygons_similarity(instance: Problem, all_shapes, threshold):
     for index, shape1 in enumerate(all_shapes):
         for i in range(index + 1, len(all_shapes)):
             shape2 = all_shapes[i]
@@ -33,17 +43,8 @@ def get_similar_polygons(instance: Problem, threshold):
                 shape1_id = shape1.shape_id
                 shape2_id = shape2.shape_id
                 instance.shapes[shape2_id][180].similar_shape = instance.shapes[shape1_id][180].similar_shape
-
-                # logger.info(
-                #     'Hausdorff distance of shapes {} and {}: {}'.format(
-                #         str(shape1), str(shape2), distance))
                 break
-
-    logger.info(distance_function_list.cache_info())
-    similar_offset_shapes = {shape.similar_shape for shape in all_shapes}
-    logger.info('Size of origin shapes: {}. Size of unique shapes: {}.'.format(
-        len(all_shapes), len(similar_offset_shapes)))
-    return similar_offset_shapes
+    return
 
 
 def calculate_similarity(shape1: Shape, shape2: Shape):
