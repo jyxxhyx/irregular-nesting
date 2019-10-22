@@ -140,8 +140,11 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
         logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
 
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.getcwd(), config['output_folder'],
-                             input_folder, file_name)
+    directory = os.path.join(os.getcwd(), config['output_folder'],
+                             input_folder)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    file_name = os.path.join(directory, file_name)
     writer.write_to_csv(file_name, instance, solution)
 
     if not config['is_production']:
@@ -164,10 +167,14 @@ def _check_create_result_directory(input_dir, config):
     -------
 
     """
+    logger = logging.getLogger(__name__)
     output_dir = input_dir.replace(config['input_folder'],
                                    config['output_folder'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+        logger.info('Directory {} does not exist'.format(output_dir))
+    else:
+        logger.info('Directory {} exists'.format(output_dir))
     output_dir = input_dir.replace(config['input_folder'],
                                    config['figure_folder'])
     if not os.path.exists(output_dir):
@@ -175,9 +182,9 @@ def _check_create_result_directory(input_dir, config):
     return
 
 
-def _write_zip_file(input_dir, folder_name, solution_files, config):
-    output_dir = input_dir.replace(config['input_folder'],
-                                   config['output_folder'])
+def _write_zip_file(input_folder, folder_name, solution_files, config):
+    output_dir = os.path.join(os.getcwd(), config['output_folder'],
+                              input_folder)
     with ZipFile(config['zip_file'], 'w') as zip_writer:
         zip_writer.write(output_dir, folder_name)
         for file in os.listdir(output_dir):
@@ -222,9 +229,8 @@ def main(config):
                             input_dir, config)
                         solution_files.append(file_name)
                 _write_zip_file(
-                    instance_dir,
-                    os.path.join(config['output_folder'], input_dir),
-                    solution_files, config)
+                    input_dir, os.path.join(config['output_folder'],
+                                            input_dir), solution_files, config)
 
 
 if __name__ == '__main__':

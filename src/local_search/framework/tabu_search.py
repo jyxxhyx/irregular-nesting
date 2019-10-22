@@ -95,12 +95,12 @@ class TabuSearch(BaseAlg):
         nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
-            if config['is_production']:
+            if not config['is_production']:
                 logger.info('NFPs json file exists.')
             with open(nfps_full_name, 'r') as json_file:
                 self.nfps = ujson.load(json_file)
         else:
-            if config['is_production']:
+            if not config['is_production']:
                 logger.info(
                     'NFPs json file does not exist. Start to calculate NFPs.')
             for index, (hole, shape) in enumerate(
@@ -131,12 +131,12 @@ class TabuSearch(BaseAlg):
         nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
-            if config['is_production']:
+            if not config['is_production']:
                 logger.info('NFPs json file exists.')
             with open(nfps_full_name, 'r') as json_file:
                 self.nfps = ujson.load(json_file)
         else:
-            if config['is_production']:
+            if not config['is_production']:
                 logger.info(
                     'NFPs json file does not exist. Start to calculate NFPs.')
             p = Pool(processes=number_processes)
