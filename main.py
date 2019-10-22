@@ -74,7 +74,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
                                           config)
 
     similar_shapes = similarity.get_similar_polygons(
-        instance, config['hausdorff_threshold'])
+        instance, config['hausdorff_threshold'], config['is_production'])
 
     # 解下料问题的主要部分
     tabu_search = TabuSearch(instance, config)

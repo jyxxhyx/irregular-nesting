@@ -48,8 +48,9 @@ class TabuSearch(BaseAlg):
         self.best_solution = Solution(
             copy(initial_sequence), deepcopy(self.current_solution.positions),
             self.current_solution.objective)
-        logger.info('Find a solution with objective {}'.format(
-            self.current_solution.objective))
+        if not self.config['is_production']:
+            logger.info('Find a solution with objective {}'.format(
+                self.current_solution.objective))
         # TODO improvement阶段待实现（包括tabu search更新机制）
         for improve_idx in range(self.config['local_search_iteration']):
             len_shapes = len(self.problem.shapes)
@@ -60,9 +61,11 @@ class TabuSearch(BaseAlg):
             self.current_solution.generate_positions(self.problem, self.nfps,
                                                      self.config)
             self.current_solution.generate_objective(self.problem)
-            logger.info('Iteration {}. Swap positions {} and {}.'.format(improve_idx, idx_1, idx_2))
-            logger.info('Find a solution with objective {}'.format(
-                self.current_solution.objective))
+            logger.info('Iteration {}. Swap positions {} and {}.'.format(
+                improve_idx, idx_1, idx_2))
+            if not self.config['is_production']:
+                logger.info('Find a solution with objective {}'.format(
+                    self.current_solution.objective))
             if self.current_solution.objective < self.best_solution.objective:
                 self.best_solution = Solution(
                     copy(initial_sequence),
@@ -92,12 +95,14 @@ class TabuSearch(BaseAlg):
         nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
-            logger.info('NFPs json file exists.')
+            if config['is_production']:
+                logger.info('NFPs json file exists.')
             with open(nfps_full_name, 'r') as json_file:
                 self.nfps = ujson.load(json_file)
         else:
-            logger.info(
-                'NFPs json file does not exist. Start to calculate NFPs.')
+            if config['is_production']:
+                logger.info(
+                    'NFPs json file does not exist. Start to calculate NFPs.')
             for index, (hole, shape) in enumerate(
                     product(self.problem.material.holes, similar_shapes)):
                 self._calculate_one_nfp(index, hole, shape)
@@ -126,12 +131,14 @@ class TabuSearch(BaseAlg):
         nfps_full_name = os.path.join(os.getcwd(), config['output_folder'],
                                       input_folder, nfps_file_name)
         if os.path.isfile(nfps_full_name):
-            logger.info('NFPs json file exists.')
+            if config['is_production']:
+                logger.info('NFPs json file exists.')
             with open(nfps_full_name, 'r') as json_file:
                 self.nfps = ujson.load(json_file)
         else:
-            logger.info(
-                'NFPs json file does not exist. Start to calculate NFPs.')
+            if config['is_production']:
+                logger.info(
+                    'NFPs json file does not exist. Start to calculate NFPs.')
             p = Pool(processes=number_processes)
             logger.info('Prepare the input.')
 
@@ -160,7 +167,7 @@ class TabuSearch(BaseAlg):
                 'shape2_rotation': shape2.rotate_degree,
                 'precision': config['clipper']['precision']
             } for shape1, shape2 in iterator]
-            logger.info('Start to map.')
+            logger.info('Start to map: generate_nfp_pool.')
             result = p.map(generate_nfp_pool, input_list)
             logger.info('Multiprocessing finished.')
             for single_nfp, shape1_id, shape2_id, shape1_rotation, shape2_rotation in result:
@@ -188,7 +195,7 @@ class TabuSearch(BaseAlg):
             p.close()
             p.join()
             p.terminate()
-            logger.info('Results gathered.')
+            logger.info('NFP results gathered.')
 
             if not config['is_production']:
                 with open(nfps_full_name, 'w') as json_file:
