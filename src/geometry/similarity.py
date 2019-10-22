@@ -6,13 +6,14 @@ import logging
 import numpy as np
 
 
-def get_similar_polygons(instance: Problem, threshold):
+def get_similar_polygons(instance: Problem, threshold, is_production):
     """
     计算形状间的相似性（目前只判断0度的）
     Parameters
     ----------
     instance
     threshold
+    is_production
 
     Returns
     -------
@@ -26,8 +27,12 @@ def get_similar_polygons(instance: Problem, threshold):
 
     logger.info(distance_function_list.cache_info())
     similar_offset_shapes = {shape.similar_shape for shape in all_shapes}
-    logger.info('Size of origin shapes: {}. Size of unique shapes: {}.'.format(
-        len(all_shapes), len(similar_offset_shapes)))
+    if not is_production:
+        logger.info(
+            'Size of origin shapes: {}. Size of unique shapes: {}.'.format(
+                len(all_shapes), len(similar_offset_shapes)))
+    else:
+        logger.info('Hausdorff finished.')
     return similar_offset_shapes
 
 
@@ -42,7 +47,9 @@ def _calculate_polygons_similarity(instance: Problem, all_shapes, threshold):
                 # TODO 同时更新180度的形状，未来可能要考虑180度和0度的相似情况
                 shape1_id = shape1.shape_id
                 shape2_id = shape2.shape_id
-                instance.shapes[shape2_id][180].similar_shape = instance.shapes[shape1_id][180].similar_shape
+                instance.shapes[shape2_id][
+                    180].similar_shape = instance.shapes[shape1_id][
+                        180].similar_shape
                 break
     return
 
