@@ -2,7 +2,7 @@
 logging_config: 'logging.yaml'
 
 # 数据集关键字
-folder_keyword: ''
+folder_keyword: 'B'
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字

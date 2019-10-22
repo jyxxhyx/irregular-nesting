@@ -189,6 +189,7 @@ def _write_zip_file(input_dir, folder_name, solution_files, config):
 
 
 def main(config):
+    logger = logging.getLogger(__name__)
     folder_keyword = config['folder_keyword']
     material_str = config['material_str']
     shape_str = config['shape_str']
@@ -199,6 +200,7 @@ def main(config):
         data_dir = config['production_data']
     else:
         data_dir = os.path.join(os.getcwd(), config['input_folder'])
+    logger.info('Scanning directory {}'.format(data_dir))
     for root, dirs, files in os.walk(data_dir):
         # 遍历不同的dataset文件夹
         for input_dir in dirs:

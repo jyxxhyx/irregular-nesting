@@ -53,8 +53,8 @@ class TabuSearch(BaseAlg):
         # TODO improvement阶段待实现（包括tabu search更新机制）
         for improve_idx in range(self.config['local_search_iteration']):
             len_shapes = len(self.problem.shapes)
-            idx_1 = randint(0, len_shapes)
-            idx_2 = randint(0, len_shapes)
+            idx_1 = randint(0, len_shapes - 1)
+            idx_2 = randint(0, len_shapes - 1)
             self.current_solution.sequences = swap_two_shapes(
                 self.current_solution.sequences, idx_1, idx_2)
             self.current_solution.generate_positions(self.problem, self.nfps,
