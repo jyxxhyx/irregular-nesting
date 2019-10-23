@@ -140,8 +140,11 @@ def _output_solution(instance, solution, objective, scale, nick_name, batch,
         logger.info('Material utilization:\t{:.3f}%'.format(utilization * 100))
 
     file_name = '{}_{}_{:.3f}.csv'.format(nick_name, batch, utilization)
-    file_name = os.path.join(os.getcwd(), config['output_folder'],
-                             input_folder, file_name)
+    if config['is_production']:
+        file_name = os.path.join(os.getcwd(), file_name)
+    else:
+        file_name = os.path.join(os.getcwd(), config['output_folder'],
+                                 input_folder, file_name)
     writer.write_to_csv(file_name, instance, solution)
 
     if not config['is_production']:
@@ -176,15 +179,31 @@ def _check_create_result_directory(input_dir, config):
 
 
 def _write_zip_file(input_dir, folder_name, solution_files, config):
-    output_dir = input_dir.replace(config['input_folder'],
-                                   config['output_folder'])
-    with ZipFile(config['zip_file'], 'w') as zip_writer:
-        zip_writer.write(output_dir, folder_name)
-        for file in os.listdir(output_dir):
-            result_file = os.path.join(output_dir, file)
-            if result_file in solution_files:
-                compressed_file = os.path.join(folder_name, file)
-                zip_writer.write(result_file, compressed_file)
+    """
+    输出submit.zip，正式版本中，结果会输出在根目录下。
+    :param input_dir:
+    :param folder_name:
+    :param solution_files:
+    :param config:
+    :return:
+    """
+    if not config['is_production']:
+        output_dir = input_dir.replace(config['input_folder'],
+                                       config['output_folder'])
+        with ZipFile(config['zip_file'], 'w') as zip_writer:
+            zip_writer.write(output_dir, folder_name)
+            for file in os.listdir(output_dir):
+                result_file = os.path.join(output_dir, file)
+                if result_file in solution_files:
+                    compressed_file = os.path.join(folder_name, file)
+                    zip_writer.write(result_file, compressed_file)
+    else:
+        with ZipFile(config['zip_file'], 'w') as zip_writer:
+            for file in os.listdir(os.getcwd()):
+                result_file = os.path.join(os.getcwd(), file)
+                if result_file in solution_files:
+                    compressed_file = os.path.join(folder_name, file)
+                    zip_writer.write(result_file, compressed_file)
     return
 
 
