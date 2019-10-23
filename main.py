@@ -167,10 +167,14 @@ def _check_create_result_directory(input_dir, config):
     -------
 
     """
+    logger = logging.getLogger(__name__)
     output_dir = input_dir.replace(config['input_folder'],
                                    config['output_folder'])
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+        logger.info('Directory {} does not exist'.format(output_dir))
+    else:
+        logger.info('Directory {} exists'.format(output_dir))
     output_dir = input_dir.replace(config['input_folder'],
                                    config['figure_folder'])
     if not os.path.exists(output_dir):
@@ -241,9 +245,8 @@ def main(config):
                             input_dir, config)
                         solution_files.append(file_name)
                 _write_zip_file(
-                    instance_dir,
-                    os.path.join(config['output_folder'], input_dir),
-                    solution_files, config)
+                    input_dir, os.path.join(config['output_folder'],
+                                            input_dir), solution_files, config)
 
 
 if __name__ == '__main__':
