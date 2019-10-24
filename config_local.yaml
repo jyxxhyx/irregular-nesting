@@ -28,7 +28,7 @@ initial_weight: 1
 increment_weight: 0.2
 
 # 邻域搜索次数
-local_search_iteration: 20
+local_search_iteration: 0
 
 # 是否为debug模式（是的话会输出单步迭代图片）
 is_debug: False

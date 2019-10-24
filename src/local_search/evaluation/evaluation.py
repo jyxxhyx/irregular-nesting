@@ -1,7 +1,7 @@
 from src.domain.problem import Problem, Position
 
 import logging
-from itertools import combinations, product
+from itertools import combinations, product, permutations
 from multiprocessing import Pool
 import os
 from shapely.geometry import Polygon, Point
@@ -120,7 +120,7 @@ def _check_shapes(solution, problem: Problem, scale):
     ]
 
     # 检查零件间的距离
-    for shape1, shape2 in combinations(positioned_shapes, 2):
+    for shape1, shape2 in permutations(positioned_shapes, 2):
         pos1 = solution.positions[shape1.shape_id][1]
         pos2 = solution.positions[shape2.shape_id][1]
 
@@ -175,7 +175,7 @@ def _check_shapes_pool(solution,
         'polygon2': polygons[str(shape2)],
         'shape1_str': str(shape1),
         'shape2_str': str(shape2),
-    } for shape1, shape2 in combinations(positioned_shapes, 2)]
+    } for shape1, shape2 in permutations(positioned_shapes, 2)]
 
     logger.info('Start to map.')
     result = p.map(_calculate_two_polygon_distance, input_list)
