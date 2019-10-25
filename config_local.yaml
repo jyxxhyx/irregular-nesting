@@ -2,7 +2,7 @@
 logging_config: 'logging.yaml'
 
 # 数据集关键字
-folder_keyword: 'B'
+folder_keyword: ''
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字
@@ -23,9 +23,9 @@ polygon_vertices: 100
 hausdorff_threshold: 0
 
 # 左底变种方法中，目标函数x轴初始权重
-initial_weight: 1
+initial_weight: 0.5
 # 左底变种方法中，目标函数x轴单次迭代增加权重
-increment_weight: 0.2
+increment_weight: 0.1
 
 # 邻域搜索次数
 local_search_iteration: 0
@@ -39,10 +39,10 @@ debug_max_piece: 10
 clipper:
   meter_limit: 2
   arc_tolerance: 0.2
-  precision: 1.01
+  precision: 1.2
 
 production_data: '/tcdata'
-production_outout: 'DatasetC'
+production_output: 'DatasetC'
 # 输入文件夹
 input_folder: 'data'
 # 输出文件夹

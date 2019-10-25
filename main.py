@@ -87,7 +87,8 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
     solution = tabu_search.get_best_solution()
     objective = tabu_search.get_best_objective()
 
-    check_feasibility_distance(solution, instance, scale)
+    if not config['is_production']:
+        check_feasibility_distance(solution, instance, scale)
     file_name = _output_solution(instance, solution, objective, scale,
                                  nick_name, batch, input_folder, config)
 
