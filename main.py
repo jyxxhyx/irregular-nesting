@@ -185,18 +185,18 @@ def _check_create_result_directory(input_dir, config):
 
 def _write_zip_file(input_dir, folder_name, solution_files, config):
     logger = logging.getLogger(__name__)
-    zip_dir = os.path.join(config['output_folder'], 'DatasetB')
+    zip_dir = os.path.join(config['output_folder'], config['production_output'])
     output_dir = os.path.join(os.getcwd(), config['output_folder'])
     with ZipFile(config['zip_file'], 'w') as zip_writer:
         zip_writer.write(output_dir, zip_dir)
-        logger.info('Write {} as {}'.format(output_dir, zip_dir))
+        # logger.info('Write {} as {}'.format(output_dir, zip_dir))
         output_dir = os.path.join(output_dir, input_dir)
         for file in os.listdir(output_dir):
             result_file = os.path.join(output_dir, file)
             if result_file in solution_files:
                 compressed_file = os.path.join(zip_dir, file)
                 zip_writer.write(result_file, compressed_file)
-                logger.info('Write {} as {}'.format(result_file, compressed_file))
+                # logger.info('Write {} as {}'.format(result_file, compressed_file))
     return
 
 

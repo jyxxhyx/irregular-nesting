@@ -61,8 +61,8 @@ class TabuSearch(BaseAlg):
             self.current_solution.generate_positions(self.problem, self.nfps,
                                                      self.config)
             self.current_solution.generate_objective(self.problem)
-            logger.info('Iteration {}. Swap positions {} and {}.'.format(
-                improve_idx, idx_1, idx_2))
+            # logger.info('Iteration {}. Swap positions {} and {}.'.format(
+            #     improve_idx, idx_1, idx_2))
             if not self.config['is_production']:
                 logger.info('Find a solution with objective {}'.format(
                     self.current_solution.objective))

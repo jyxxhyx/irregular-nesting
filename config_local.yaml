@@ -42,6 +42,7 @@ clipper:
   precision: 1.01
 
 production_data: '/tcdata'
+production_outout: 'DatasetC'
 # 输入文件夹
 input_folder: 'data'
 # 输出文件夹
