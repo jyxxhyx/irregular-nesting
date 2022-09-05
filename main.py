@@ -97,7 +97,7 @@ def _solve_one_instance(material_file, shape_file, nick_name, scale,
 
 
 def _construct_instance(material_file, shape_file, scale, config):
-    material = data_reader.read_material_from_csv(material_file, scale)
+    material = data_reader.read_material_from_csv(material_file, scale, config['is_hole_circle'])
 
     # 目前多边形外延比较保守（pyclipper计算中会有取整，造成误差），保证可行解
     offset_spacing = math.ceil(material.spacing / 2) + config['extra_offset']
@@ -105,9 +105,10 @@ def _construct_instance(material_file, shape_file, scale, config):
         material.spacing / 2) + config['extra_hole_offset']
 
     # 计算瑕疵的近似正多边形
-    for hole in material.holes:
-        hole.approximate_regular_polygon(config['polygon_vertices'],
-                                         hole_offset_spacing)
+    if config['is_hole_circle']:
+        for hole in material.holes:
+            hole.approximate_regular_polygon(config['polygon_vertices'],
+                                             hole_offset_spacing)
 
     if config['is_debug']:
         shape_dict, batch = data_reader.read_shapes_from_csv(

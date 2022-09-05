@@ -1,5 +1,5 @@
 from src.domain.problem import Shape, Material, Problem
-from src.domain.material import Hole
+from src.domain.material import Hole, IrregularMaterial
 from src.geometry.rotate import rotate_180
 
 import ast
@@ -50,28 +50,46 @@ def read_shapes_from_csv(file_name,
     return shape_dict, batch_id
 
 
-def read_material_from_csv(file_name, scale=1):
+def read_material_from_csv(file_name, scale=1, is_hole_circle=True):
     with open(file_name, encoding='utf-8') as csv_file:
         contents = csv.reader(csv_file)
         header = next(contents, None)
         row_material = next(contents, None)
         material_id = row_material[0]
-        area = row_material[1].split('*')
-        width = int(area[0]) * scale
-        height = int(area[1]) * scale
+        is_regular = True
+        shape_polygon = []
+        if '*' in row_material[1]:
+            area = row_material[1].split('*')
+            width = int(area[0]) * scale
+            height = int(area[1]) * scale
+        else:
+            is_regular = False
+            shape_polygon = ast.literal_eval(row_material[1])
+            shape_polygon = [[node[0] * scale, node[1] * scale]
+                             for node in shape_polygon]
+            pass
         holes = list()
         if row_material[2]:
             contents_holes = ast.literal_eval(row_material[2])
             for index, each_hole in enumerate(contents_holes):
-                coordinates = [
-                    each_hole[0][0] * scale, each_hole[0][1] * scale
-                ]
-                hole = Hole('hole{}'.format(index), coordinates,
-                            each_hole[1] * scale)
-                holes.append(hole)
+                if is_hole_circle:
+                    coordinates = [
+                        each_hole[0][0] * scale, each_hole[0][1] * scale
+                    ]
+                    hole = Hole('hole{}'.format(index), coordinates,
+                                each_hole[1] * scale)
+                    holes.append(hole)
+                else:
+                    polygon = [[point[0] * scale, point[1] * scale] for point in each_hole]
+                    hole = Hole('hole{}'.format(index), list(), 0, offset_polygon=polygon)
+                    holes.append(hole)
+
         spacing = int(row_material[3]) * scale
         margin = int(row_material[4]) * scale
-        material = Material(material_id, height, width, spacing, margin, holes)
+        if is_regular:
+            material = Material(material_id, height, width, spacing, margin, holes)
+        else:
+            material = IrregularMaterial(material_id, shape_polygon, spacing, margin, holes)
     return material
 
 

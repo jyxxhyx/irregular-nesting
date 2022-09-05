@@ -60,7 +60,19 @@ def generate_ifp(material: Material, shape: Shape):
     min_y = material.margin - shape.min_y
     max_x = material.width - material.margin - (shape.max_x - shape.min_x)
     max_y = material.height - material.margin - (shape.max_y - shape.min_y)
-    return [[[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]]
+    if isinstance(material, Material):
+        return [[[min_x, min_y], [max_x, min_y], [max_x, max_y], [min_x, max_y]]]
+    else:
+        ifp = material.get_polygon(material.width)
+        pc = pyclipper.Pyclipper()
+        pc.AddPaths(ifp, pyclipper.PT_SUBJECT, True)
+
+        outer_part = [[0, max_y], [0, material.height], [material.width, material.height], [material.width, 0],
+                      [max_x, 0], [max_x, max_y]]
+        pc.AddPath(outer_part, pyclipper.PT_CLIP, True)
+        result = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD,
+                            pyclipper.PFT_EVENODD)
+        return result
 
 
 def intersect_polygons(polygon1, polygon2):

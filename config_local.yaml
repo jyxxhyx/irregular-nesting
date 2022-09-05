@@ -2,7 +2,7 @@
 logging_config: 'logging.yaml'
 
 # 数据集关键字
-folder_keyword: 'B'
+folder_keyword: 'C'
 # 面料输入文件关键字
 material_str: 'mianliao'
 # 零件输入文件关键字
@@ -18,6 +18,9 @@ extra_offset: 3
 extra_hole_offset: 0
 # 圆形瑕疵近似多边形边数
 polygon_vertices: 100
+
+# 是否圆形瑕疵（不是就按多边形）
+is_hole_circle: False
 
 # hausdorff距离阈值
 hausdorff_threshold: 0
