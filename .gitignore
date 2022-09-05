@@ -4,3 +4,7 @@
 *.zip
 *.pdf
 *.png
+*.csv
+*.json
+*.iml
+*.xml
